@@ -2,70 +2,64 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通通借 | 總控後台</title>
+    <title>金合舅 JoJoPAY | 管理總控</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --accent: #6366f1; --bg: #0b0c10; --card: #161720; --sidebar: #12121c; }
+        :root { --accent: #6366f1; --bg: #0b0c10; --card: #161720; --sidebar: #0e0f16; }
         body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; }
         
-        /* 側邊欄對齊截圖 */
-        .sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid #222; padding: 20px; }
-        .nav-item { padding: 15px; margin-bottom: 5px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; color: #a0a0a0; }
-        .nav-item.active { background: #2d2d44; color: #fff; border-left: 4px solid var(--accent); }
+        .sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid #222; padding: 25px; display: flex; flex-direction: column; }
+        .nav-item { padding: 15px; border-radius: 12px; cursor: pointer; color: #71717a; display: flex; align-items: center; margin-bottom: 5px; }
+        .nav-item.active { background: #1e1e2e; color: #fff; border-left: 4px solid var(--accent); }
         
-        /* 主區域 */
-        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .main { flex: 1; padding: 40px; overflow-y: auto; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #222; }
-        .stat-num { font-size: 24px; font-weight: bold; color: var(--accent); }
+        .stat-card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #222; }
+        .stat-num { font-size: 32px; font-weight: bold; color: var(--accent); }
 
-        /* 篩選按鈕對齊截圖 */
-        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .filter-btn { padding: 8px 15px; background: #1c1d29; border: 1px solid #333; border-radius: 20px; color: #888; cursor: pointer; }
+        .search-input { width: 100%; padding: 14px; background: #1a1b26; border: 1px solid #333; border-radius: 12px; color: #fff; margin-bottom: 20px; outline: none; }
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 25px; }
+        .filter-btn { padding: 8px 18px; background: #1a1b26; border: 1px solid #333; border-radius: 20px; color: #888; cursor: pointer; font-size: 13px; }
         .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-        .search-box { width: 100%; padding: 12px; background: #1c1d29; border: 1px solid #333; border-radius: 10px; color: #fff; margin-bottom: 20px; }
-        
         table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 15px; overflow: hidden; }
-        th { background: #1e1e2d; padding: 15px; text-align: left; font-size: 13px; color: #888; }
-        td { padding: 15px; border-bottom: 1px solid #222; }
-        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; background: #333; }
-        .btn-clear { background: #e74c3c; padding: 10px; border: none; border-radius: 5px; color: #fff; cursor: pointer; margin-top: 50px; width: 100%; }
+        th { background: #1e1e2d; padding: 18px; text-align: left; color: #52525b; font-size: 13px; }
+        td { padding: 18px; border-bottom: 1px solid #222; font-size: 14px; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; background: #27272a; color: #fbbf24; }
+
+        .btn-clear { background: #ef4444; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: auto; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2 style="color:var(--accent);">通通借</h2>
-    <div class="nav-item active">📊 儀表板</div>
-    <div class="nav-item">📋 申請案件</div>
-    <div class="nav-item">💸 出款帳本管理</div>
-    <div class="nav-item">🏦 還款帳本管理</div>
-    <button class="btn-clear" onclick="clearAll()">🧨 一鍵清空所有資料</button>
+    <h1 style="color:var(--accent); font-size: 24px; letter-spacing: 2px;">JoJoPAY</h1>
+    <div class="nav-item active">📊 數據儀表板</div>
+    <div class="nav-item">📑 申請案件審核</div>
+    <div class="nav-item">💰 出款帳本管理</div>
+    <button class="btn-clear" onclick="clearAll()">🧨 全系統資料清空</button>
 </div>
 
 <div class="main">
-    <h1>儀表板</h1>
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-num" id="count-all">0</div><div>總申請數</div></div>
-        <div class="stat-card"><div class="stat-num" id="count-pending" style="color:#fbbf24;">0</div><div>待審核</div></div>
-        <div class="stat-card"><div class="stat-num" id="count-paid" style="color:#4ade80;">0</div><div>已撥款</div></div>
-        <div class="stat-card"><div class="stat-num" id="count-fail" style="color:#f87171;">0</div><div>已拒絕</div></div>
+        <div class="stat-card"><div class="stat-num" id="count-all">0</div><small style="color:#52525b">總申請數</small></div>
+        <div class="stat-card"><div class="stat-num" id="count-pending" style="color:#fbbf24">0</div><small style="color:#52525b">待審核</small></div>
+        <div class="stat-card"><div class="stat-num" id="count-done" style="color:#4ade80">0</div><small style="color:#52525b">已撥款</small></div>
+        <div class="stat-card"><div class="stat-num" id="count-reject" style="color:#f87171">0</div><small style="color:#52525b">已拒絕</small></div>
     </div>
 
-    <input type="text" class="search-box" id="searchInput" oninput="renderTable()" placeholder="🔍 輸入姓名、手機或身分證字號搜尋...">
+    <input type="text" class="search-input" id="searchBox" placeholder="🔍 搜尋姓名、電話或身分證..." oninput="renderTable()">
 
     <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterStatus('全部')">全部</button>
-        <button class="filter-btn" onclick="filterStatus('待審核')">⏳ 待審核</button>
-        <button class="filter-btn" onclick="filterStatus('已撥款')">💰 已撥款</button>
+        <button class="filter-btn active" onclick="setFilter('全部')">全部</button>
+        <button class="filter-btn" onclick="setFilter('待審核')">待審核</button>
+        <button class="filter-btn" onclick="setFilter('已撥款')">已撥款</button>
     </div>
 
     <table>
         <thead>
-            <tr><th>申請人</th><th>借款資訊</th><th>狀態</th><th>時間</th><th>操作</th></tr>
+            <tr><th>申請人資訊</th><th>身分證字號</th><th>狀態</th><th>申請日期</th><th>管理操作</th></tr>
         </thead>
         <tbody id="caseList"></tbody>
     </table>
@@ -73,48 +67,48 @@
 
 <script>
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY", // <--- 務必更換
+        apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH",
         databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let allUsers = [];
-    let currentFilter = '全部';
+    let allData = [];
+    let filterStatus = '全部';
 
     db.ref('users').on('value', snap => {
-        allUsers = [];
-        const data = snap.val();
-        for(let key in data) allUsers.push(data[key]);
+        allData = [];
+        const val = snap.val();
+        for(let id in val) allData.push(val[id]);
         updateStats();
         renderTable();
     });
 
     function updateStats() {
-        document.getElementById('count-all').innerText = allUsers.length;
-        document.getElementById('count-pending').innerText = allUsers.filter(u => u.status === '待審核').length;
-        document.getElementById('count-paid').innerText = allUsers.filter(u => u.status === '已撥款').length;
-        document.getElementById('count-fail').innerText = allUsers.filter(u => u.status === '已拒絕').length;
+        document.getElementById('count-all').innerText = allData.length;
+        document.getElementById('count-pending').innerText = allData.filter(u => u.status === '待審核').length;
+        document.getElementById('count-done').innerText = allData.filter(u => u.status === '已撥款').length;
+        document.getElementById('count-reject').innerText = allData.filter(u => u.status === '已拒絕').length;
     }
 
     function renderTable() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const list = document.getElementById('caseList');
-        list.innerHTML = '';
+        const search = document.getElementById('searchBox').value.toLowerCase();
+        const tbody = document.getElementById('caseList');
+        tbody.innerHTML = '';
 
-        allUsers.forEach(u => {
-            if (currentFilter !== '全部' && u.status !== currentFilter) return;
+        allData.forEach(u => {
+            if (filterStatus !== '全部' && u.status !== filterStatus) return;
             if (search && !JSON.stringify(u).toLowerCase().includes(search)) return;
 
-            list.innerHTML += `
+            tbody.innerHTML += `
                 <tr>
-                    <td><b>${u.name}</b><br><small>${u.phone}</small></td>
+                    <td><b>${u.name}</b><br><small style="color:#71717a">${u.phone}</small></td>
                     <td>${u.idCard}</td>
-                    <td><span class="status-badge">${u.status}</span></td>
+                    <td><span class="badge">${u.status}</span></td>
                     <td>${u.submitTime || 'N/A'}</td>
                     <td>
                         <button onclick="updateStatus('${u.phone}', '已撥款')" style="background:#4ade80; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">准</button>
-                        <button onclick="updateStatus('${u.phone}', '已拒絕')" style="background:#f87171; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; color:#fff;">核</button>
+                        <button onclick="updateStatus('${u.phone}', '已拒絕')" style="background:#f87171; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; color:#fff;">駁</button>
                     </td>
                 </tr>`;
         });
@@ -124,16 +118,15 @@
         db.ref('users/' + phone).update({ status: status });
     }
 
-    function filterStatus(s) {
-        currentFilter = s;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(s)));
+    function setFilter(s) {
+        filterStatus = s;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.innerText === s));
         renderTable();
     }
 
     function clearAll() {
-        if(confirm("元老，確定要『全清空』所有數據嗎？包含帳本與申請紀錄。")) {
-            db.ref('/').remove();
-            alert("已清空，目前系統為純淨版。");
+        if(confirm("元老，確定要『徹底清空』所有數據嗎？此動作不可逆！")) {
+            db.ref('/').remove().then(() => alert("資料庫已全數更新為純淨狀態！"));
         }
     }
 </script>
