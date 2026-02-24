@@ -14,17 +14,11 @@
         .nav-link { cursor: pointer; font-weight: bold; color: var(--primary); }
         .container { max-width: 600px; margin: 30px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         h2 { border-left: 5px solid var(--primary); padding-left: 10px; color: var(--primary); }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
         button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; transition: 0.3s; }
         button:hover { background: #2a3a7c; }
-        .admin-btn { background: none; color: #ccc; border: none; font-size: 0.7rem; margin-top: 100px; cursor: pointer; }
-        
-        /* 後台樣式 */
-        .admin-card { border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 5px; position: relative; }
-        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 0.8rem; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-approved { background: #d4edda; color: #155724; }
         .hidden { display: none !important; }
+        .ticker-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -47,37 +41,22 @@
     <input type="text" id="app-line" placeholder="Line ID (重要)">
     <input type="number" id="app-amount" placeholder="希望借款金額">
     <textarea id="app-reason" placeholder="借款用途說明..."></textarea>
-    <button onclick="submitApplication()">送出申請</button>
+    <button onclick="submitApplication()">送出申請單</button>
 </div>
 
 <div id="status-page" class="container hidden">
-    <h2>申請進度查詢</h2>
-    <input type="text" id="query-phone" placeholder="請輸入申請時的手機號碼">
+    <h2>進度查詢</h2>
+    <input type="text" id="query-phone" placeholder="輸入申請時的手機號碼">
     <button onclick="queryStatus()">立即查詢</button>
-    <div id="query-result" style="margin-top:20px; font-weight:bold; text-align:center;"></div>
+    <div id="query-result" style="margin-top:20px; text-align:center;"></div>
 </div>
 
 <div id="info-page" class="container hidden">
     <h2>最新撥款動態</h2>
-    <div id="ticker-list">正在加載數據...</div>
+    <div id="ticker-list">讀取中...</div>
 </div>
-
-<div id="login-page" class="container hidden">
-    <h2>管理員驗證</h2>
-    <input type="password" id="admin-pass" placeholder="請輸入管理密碼">
-    <button onclick="checkAdmin()">登入後台</button>
-</div>
-
-<div id="admin-panel" class="container hidden" style="max-width: 900px;">
-    <h2>後台管理中樞</h2>
-    <div id="admin-list">正在讀取進件資料...</div>
-    <button onclick="location.reload()" style="background:#666; margin-top:20px;">刷新數據</button>
-</div>
-
-<center><button class="admin-btn" onclick="showPage('login-page')">ADMIN LOGIN</button></center>
 
 <script>
-    // 約克元老的密鑰配置
     const firebaseConfig = {
       apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH",
       authDomain: "theone-zero.firebaseapp.com",
@@ -86,7 +65,6 @@
       messagingSenderId: "1067669012841",
       appId: "1:1067669012841:web:1694da76f172c6"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -94,10 +72,8 @@
         document.querySelectorAll('.container').forEach(p => p.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         if(id === 'info-page') loadTicker();
-        if(id === 'admin-panel') loadAdminData();
     }
 
-    // --- 客戶功能 ---
     function submitApplication() {
         const data = {
             name: document.getElementById('app-name').value,
@@ -108,10 +84,9 @@
             status: '審核中',
             time: new Date().toLocaleString()
         };
-        if(!data.name || !data.phone) return alert("請填寫必填欄位");
-        
+        if(!data.name || !data.phone || !data.line) return alert("請填寫必填欄位");
         db.ref('loans').push(data).then(() => {
-            alert("申請已送出，專員將盡快與您聯繫。");
+            alert("提交成功，請等候專員聯繫。");
             showPage('status-page');
         });
     }
@@ -119,10 +94,9 @@
     function queryStatus() {
         const phone = document.getElementById('query-phone').value;
         db.ref('loans').orderByChild('phone').equalTo(phone).once('value', snapshot => {
-            const val = snapshot.val();
-            if(!val) return document.getElementById('query-result').innerText = "查無資料，請確認號碼。";
-            const item = Object.values(val)[0];
-            document.getElementById('query-result').innerHTML = `狀態：<span style="color:blue">${item.status}</span><br>最後更新：${item.time}`;
+            if(!snapshot.exists()) return document.getElementById('query-result').innerText = "查無資料。";
+            const item = Object.values(snapshot.val())[0];
+            document.getElementById('query-result').innerHTML = `<h3>狀態：${item.status}</h3><p>最後更新：${item.time}</p>`;
         });
     }
 
@@ -131,49 +105,11 @@
             let html = "";
             snapshot.forEach(child => {
                 const m = child.val();
-                if(m.status === '已撥款') {
-                    html += `<div class="admin-card">🎉 恭喜 ${m.name[0]}O${m.name.slice(-1)} 成功撥款 $${m.amount}</div>`;
-                }
+                if(m.status === '已撥款') html += `<div class="ticker-item">🎉 恭喜 ${m.name[0]}O${m.name.slice(-1)} 成功撥款 $${m.amount}</div>`;
             });
-            document.getElementById('ticker-list').innerHTML = html || "目前尚無撥款紀錄。";
-        });
-    }
-
-    // --- 管理功能 ---
-    function checkAdmin() {
-        if(document.getElementById('admin-pass').value === '123456') showPage('admin-panel');
-        else alert("密碼錯誤");
-    }
-
-    function loadAdminData() {
-        db.ref('loans').once('value', snapshot => {
-            let html = "";
-            snapshot.forEach(child => {
-                const m = child.val();
-                const key = child.key;
-                html += `
-                <div class="admin-card">
-                    <strong>姓名：${m.name}</strong> (${m.time})<br>
-                    電話：${m.phone} | <strong>Line ID：${m.line}</strong><br>
-                    金額：$${m.amount} | 用途：${m.reason}<br>
-                    當前狀態：<span class="status-badge ${m.status==='審核中'?'status-pending':'status-approved'}">${m.status}</span>
-                    <div style="margin-top:10px;">
-                        <button onclick="updateStatus('${key}','已撥款')" style="width:auto; padding:5px; background:green;">核准撥款</button>
-                        <button onclick="updateStatus('${key}','不符資格')" style="width:auto; padding:5px; background:red;">駁回案件</button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('admin-list').innerHTML = html;
-        });
-    }
-
-    function updateStatus(key, newStatus) {
-        db.ref('loans/' + key).update({ status: newStatus, time: new Date().toLocaleString() }).then(() => {
-            alert("狀態已更新");
-            loadAdminData();
+            document.getElementById('ticker-list').innerHTML = html || "尚無撥款資料。";
         });
     }
 </script>
-
 </body>
 </html>
