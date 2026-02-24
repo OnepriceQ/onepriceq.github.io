@@ -3,195 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>金合舅 | 總控管理系統</title>
+    <title>通通借 | 總控後台</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --gold: #d4af37; --bg-dark: #050505; --card-bg: #121212; --border: #2a2a2a; --text-gray: #a0a0a0; }
-        body { font-family: 'PingFang TC', sans-serif; background: var(--bg-dark); color: #fff; margin: 0; display: flex; height: 100vh; }
+        :root { --accent: #6366f1; --bg: #0b0c10; --card: #161720; --sidebar: #12121c; }
+        body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; height: 100vh; }
         
-        /* 側邊導覽欄 */
-        .sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 30px 20px; font-size: 1.6rem; font-weight: bold; color: var(--gold); border-bottom: 1px solid var(--border); text-align: center; letter-spacing: 2px; }
-        .nav-menu { flex: 1; padding: 20px 0; }
-        .nav-link { padding: 15px 25px; cursor: pointer; color: var(--text-gray); display: flex; align-items: center; transition: 0.3s; border-left: 4px solid transparent; }
-        .nav-link:hover, .nav-link.active { background: #1a1a1a; color: var(--gold); border-left: 4px solid var(--gold); }
-        .nav-icon { margin-right: 15px; font-size: 1.2rem; }
-
-        /* 主內容區 */
-        .content { flex: 1; overflow-y: auto; padding: 40px; }
-        .dashboard-header { margin-bottom: 30px; border-left: 5px solid var(--gold); padding-left: 15px; }
+        /* 側邊欄對齊截圖 */
+        .sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid #222; padding: 20px; }
+        .nav-item { padding: 15px; margin-bottom: 5px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; color: #a0a0a0; }
+        .nav-item.active { background: #2d2d44; color: #fff; border-left: 4px solid var(--accent); }
         
-        /* 數據卡片 */
-        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .stat-card { background: var(--card-bg); padding: 25px; border-radius: 10px; border: 1px solid var(--border); text-align: center; }
-        .stat-num { font-size: 2.2rem; font-weight: bold; color: var(--gold); display: block; }
-        .stat-title { color: var(--text-gray); font-size: 0.9rem; margin-top: 5px; }
+        /* 主區域 */
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #222; }
+        .stat-num { font-size: 24px; font-weight: bold; color: var(--accent); }
 
-        /* 表格優化 */
-        .table-wrapper { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #1a1a1a; color: var(--gold); padding: 18px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
-        td { padding: 18px; border-bottom: 1px solid var(--border); font-size: 0.95rem; color: #ddd; }
+        /* 篩選按鈕對齊截圖 */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 15px; background: #1c1d29; border: 1px solid #333; border-radius: 20px; color: #888; cursor: pointer; }
+        .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .search-box { width: 100%; padding: 12px; background: #1c1d29; border: 1px solid #333; border-radius: 10px; color: #fff; margin-bottom: 20px; }
         
-        /* 憑證縮圖 */
-        .doc-img { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; cursor: pointer; border: 1px solid #444; margin-right: 5px; }
-        .doc-img:hover { border-color: var(--gold); transform: scale(1.1); transition: 0.2s; }
-
-        /* 按鈕樣式 */
-        .btn-action { padding: 6px 15px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; margin-right: 5px; }
-        .btn-pass { background: #2ecc71; color: #000; }
-        .btn-reject { background: #e74c3c; color: #fff; }
-
-        .hidden { display: none !important; }
+        table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 15px; overflow: hidden; }
+        th { background: #1e1e2d; padding: 15px; text-align: left; font-size: 13px; color: #888; }
+        td { padding: 15px; border-bottom: 1px solid #222; }
+        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; background: #333; }
+        .btn-clear { background: #e74c3c; padding: 10px; border: none; border-radius: 5px; color: #fff; cursor: pointer; margin-top: 50px; width: 100%; }
     </style>
 </head>
 <body>
 
-<aside class="sidebar">
-    <div class="sidebar-header">金合舅 <span style="font-size: 0.7rem; display: block; color: #666;">JOJOPAY ADMIN</span></div>
-    <nav class="nav-menu">
-        <div class="nav-link active" onclick="switchTab('dash')"><span class="nav-icon">🏠</span>儀表板首頁</div>
-        <div class="nav-link" onclick="switchTab('cases')"><span class="nav-icon">📑</span>待審核案件</div>
-        <div class="nav-link" onclick="switchTab('bank')"><span class="nav-icon">🏦</span>撥款帳本</div>
-        <div class="nav-link" style="margin-top: 50px; color: #ff4d4d;" onclick="window.location.href='index.html'"><span class="nav-icon">🚪</span>系統登出</div>
-    </nav>
-</aside>
+<div class="sidebar">
+    <h2 style="color:var(--accent);">通通借</h2>
+    <div class="nav-item active">📊 儀表板</div>
+    <div class="nav-item">📋 申請案件</div>
+    <div class="nav-item">💸 出款帳本管理</div>
+    <div class="nav-item">🏦 還款帳本管理</div>
+    <button class="btn-clear" onclick="clearAll()">🧨 一鍵清空所有資料</button>
+</div>
 
-<main class="content">
-    <div id="tab-dash">
-        <div class="dashboard-header"><h1>總控數據中心</h1></div>
-        <div class="stats-container">
-            <div class="stat-card"><span class="stat-num" id="total-users">0</span><span class="stat-title">總註冊用戶</span></div>
-            <div class="stat-card"><span class="stat-num" id="pending-users" style="color: #ffcc00;">0</span><span class="stat-title">待處理審核</span></div>
-            <div class="stat-card"><span class="stat-num" id="approved-users" style="color: #2ecc71;">0</span><span class="stat-title">已核准撥款</span></div>
-        </div>
-        
-        <div class="table-wrapper">
-            <div style="padding: 20px; background: #1a1a1a; font-weight: bold; color: var(--gold);">⚡ 最近申請動態</div>
-            <table>
-                <thead><tr><th>申請人</th><th>手機號碼</th><th>狀態</th><th>申請時間</th><th>快速操作</th></tr></thead>
-                <tbody id="recent-list"></tbody>
-            </table>
-        </div>
+<div class="main">
+    <h1>儀表板</h1>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="count-all">0</div><div>總申請數</div></div>
+        <div class="stat-card"><div class="stat-num" id="count-pending" style="color:#fbbf24;">0</div><div>待審核</div></div>
+        <div class="stat-card"><div class="stat-num" id="count-paid" style="color:#4ade80;">0</div><div>已撥款</div></div>
+        <div class="stat-card"><div class="stat-num" id="count-fail" style="color:#f87171;">0</div><div>已拒絕</div></div>
     </div>
 
-    <div id="tab-cases" class="hidden">
-        <div class="dashboard-header"><h1>待審核案件管理</h1></div>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>申請人資訊</th>
-                        <th>學校 / 工作</th>
-                        <th>附件憑證 (點擊放大)</th>
-                        <th>目前狀態</th>
-                        <th>審核動作</th>
-                    </tr>
-                </thead>
-                <tbody id="full-case-list"></tbody>
-            </table>
-        </div>
+    <input type="text" class="search-box" id="searchInput" oninput="renderTable()" placeholder="🔍 輸入姓名、手機或身分證字號搜尋...">
+
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterStatus('全部')">全部</button>
+        <button class="filter-btn" onclick="filterStatus('待審核')">⏳ 待審核</button>
+        <button class="filter-btn" onclick="filterStatus('已撥款')">💰 已撥款</button>
     </div>
 
-    <div id="tab-bank" class="hidden">
-        <div class="dashboard-header"><h1>撥款帳本 (出款專用)</h1></div>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>戶名</th>
-                        <th>銀行代碼</th>
-                        <th>分行名稱</th>
-                        <th>匯款帳號</th>
-                        <th>關聯手機</th>
-                    </tr>
-                </thead>
-                <tbody id="bank-list"></tbody>
-            </table>
-        </div>
-    </div>
-</main>
+    <table>
+        <thead>
+            <tr><th>申請人</th><th>借款資訊</th><th>狀態</th><th>時間</th><th>操作</th></tr>
+        </thead>
+        <tbody id="caseList"></tbody>
+    </table>
+</div>
 
 <script>
-    // --- Firebase 配置 ---
     const firebaseConfig = {
-      apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH", 
-      authDomain: "theone-zero.firebaseapp.com",
-      projectId: "theone-zero",
-      databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
+        apiKey: "YOUR_API_KEY", // <--- 務必更換
+        databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function switchTab(tabId) {
-        document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden'));
-        document.getElementById('tab-' + tabId).classList.remove('hidden');
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-    }
+    let allUsers = [];
+    let currentFilter = '全部';
 
-    // 即時監聽數據
     db.ref('users').on('value', snap => {
-        const users = snap.val();
-        let counts = { total: 0, pending: 0, approved: 0 };
-        let recentHtml = '', fullHtml = '', bankHtml = '';
-
-        for(let phone in users) {
-            const u = users[phone];
-            if(!u.name) continue; // 過濾掉空帳號
-
-            counts.total++;
-            if(u.kycStatus === '審核中') counts.pending++;
-            if(u.kycStatus === '已核准') counts.approved++;
-
-            // 列表資料
-            const row = `<tr>
-                <td>${u.name}</td>
-                <td>${u.phone}</td>
-                <td style="color:${u.kycStatus==='審核中'?'#ffcc00':'#2ecc71'}">${u.kycStatus}</td>
-                <td>${u.submitTime || 'N/A'}</td>
-                <td><button class="btn-action btn-pass" onclick="updateUser('${u.phone}', '已核准')">准</button></td>
-            </tr>`;
-            recentHtml += row;
-
-            // 完整審核頁
-            fullHtml += `<tr>
-                <td><b>${u.name}</b><br><small>${u.phone}</small><br>Line: ${u.line || '無'}</td>
-                <td>🏫 ${u.school || '未填'}<br>💼 ${u.job || '未填'}</td>
-                <td>
-                    ${u.idImg ? `<img src="${u.idImg}" class="doc-img" onclick="window.open(this.src)">` : ''}
-                    ${u.jobImg ? `<img src="${u.jobImg}" class="doc-img" onclick="window.open(this.src)">` : ''}
-                    ${u.schoolImg ? `<img src="${u.schoolImg}" class="doc-img" onclick="window.open(this.src)">` : ''}
-                </td>
-                <td><span style="color:#ffcc00">${u.kycStatus}</span></td>
-                <td>
-                    <button class="btn-action btn-pass" onclick="updateUser('${u.phone}', '已核准')">核准撥款</button>
-                    <button class="btn-action btn-reject" onclick="updateUser('${u.phone}', '已拒絕')">拒絕</button>
-                </td>
-            </tr>`;
-
-            // 帳本頁 (這裡假設之後您會在前台收這些資料，目前先留空位)
-            bankHtml += `<tr>
-                <td>${u.name}</td>
-                <td>${u.bankCode || '008'}</td>
-                <td>${u.bankBranch || '台北分行'}</td>
-                <td style="letter-spacing:1px; color:var(--gold)">${u.bankAcc || '123-456-7890XXX'}</td>
-                <td>${u.phone}</td>
-            </tr>`;
-        }
-
-        document.getElementById('total-users').innerText = counts.total;
-        document.getElementById('pending-users').innerText = counts.pending;
-        document.getElementById('approved-users').innerText = counts.approved;
-        document.getElementById('recent-list').innerHTML = recentHtml;
-        document.getElementById('full-case-list').innerHTML = fullHtml;
-        document.getElementById('bank-list').innerHTML = bankHtml;
+        allUsers = [];
+        const data = snap.val();
+        for(let key in data) allUsers.push(data[key]);
+        updateStats();
+        renderTable();
     });
 
-    function updateUser(phone, status) {
-        if(confirm(`確認將用戶 ${phone} 變更為 [${status}] 嗎？`)) {
-            db.ref('users/' + phone).update({ kycStatus: status });
+    function updateStats() {
+        document.getElementById('count-all').innerText = allUsers.length;
+        document.getElementById('count-pending').innerText = allUsers.filter(u => u.status === '待審核').length;
+        document.getElementById('count-paid').innerText = allUsers.filter(u => u.status === '已撥款').length;
+        document.getElementById('count-fail').innerText = allUsers.filter(u => u.status === '已拒絕').length;
+    }
+
+    function renderTable() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const list = document.getElementById('caseList');
+        list.innerHTML = '';
+
+        allUsers.forEach(u => {
+            if (currentFilter !== '全部' && u.status !== currentFilter) return;
+            if (search && !JSON.stringify(u).toLowerCase().includes(search)) return;
+
+            list.innerHTML += `
+                <tr>
+                    <td><b>${u.name}</b><br><small>${u.phone}</small></td>
+                    <td>${u.idCard}</td>
+                    <td><span class="status-badge">${u.status}</span></td>
+                    <td>${u.submitTime || 'N/A'}</td>
+                    <td>
+                        <button onclick="updateStatus('${u.phone}', '已撥款')" style="background:#4ade80; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">准</button>
+                        <button onclick="updateStatus('${u.phone}', '已拒絕')" style="background:#f87171; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; color:#fff;">核</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    function updateStatus(phone, status) {
+        db.ref('users/' + phone).update({ status: status });
+    }
+
+    function filterStatus(s) {
+        currentFilter = s;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(s)));
+        renderTable();
+    }
+
+    function clearAll() {
+        if(confirm("元老，確定要『全清空』所有數據嗎？包含帳本與申請紀錄。")) {
+            db.ref('/').remove();
+            alert("已清空，目前系統為純淨版。");
         }
     }
 </script>
