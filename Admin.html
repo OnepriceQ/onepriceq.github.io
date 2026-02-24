@@ -3,88 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通通借 | 管理後台系統</title>
+    <title>金合舅 | 總控管理系統</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primary: #6366f1; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --sidebar: #111827; }
-        body { font-family: 'PingFang TC', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { --gold: #d4af37; --bg-dark: #050505; --card-bg: #121212; --border: #2a2a2a; --text-gray: #a0a0a0; }
+        body { font-family: 'PingFang TC', sans-serif; background: var(--bg-dark); color: #fff; margin: 0; display: flex; height: 100vh; }
         
-        /* 側邊欄 - 對齊截圖 */
-        .sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid #334155; display: flex; flex-direction: column; padding: 20px 0; }
-        .sidebar-brand { padding: 0 25px 30px; font-size: 1.5rem; font-weight: bold; color: var(--text); border-bottom: 1px solid #334155; margin-bottom: 20px; }
-        .nav-item { padding: 12px 25px; cursor: pointer; display: flex; align-items: center; color: #94a3b8; transition: 0.2s; font-size: 0.95rem; }
-        .nav-item:hover, .nav-item.active { background: #1e293b; color: var(--text); border-left: 4px solid var(--primary); }
-        .nav-icon { margin-right: 12px; width: 20px; text-align: center; }
+        /* 側邊導覽欄 */
+        .sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 30px 20px; font-size: 1.6rem; font-weight: bold; color: var(--gold); border-bottom: 1px solid var(--border); text-align: center; letter-spacing: 2px; }
+        .nav-menu { flex: 1; padding: 20px 0; }
+        .nav-link { padding: 15px 25px; cursor: pointer; color: var(--text-gray); display: flex; align-items: center; transition: 0.3s; border-left: 4px solid transparent; }
+        .nav-link:hover, .nav-link.active { background: #1a1a1a; color: var(--gold); border-left: 4px solid var(--gold); }
+        .nav-icon { margin-right: 15px; font-size: 1.2rem; }
 
-        /* 主內容區 - 對齊儀表板 */
-        .main { flex: 1; overflow-y: auto; padding: 30px; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
-        .stat-card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #334155; position: relative; }
-        .stat-value { font-size: 2rem; font-weight: bold; display: block; margin-bottom: 5px; }
-        .stat-label { color: #94a3b8; font-size: 0.85rem; }
+        /* 主內容區 */
+        .content { flex: 1; overflow-y: auto; padding: 40px; }
+        .dashboard-header { margin-bottom: 30px; border-left: 5px solid var(--gold); padding-left: 15px; }
         
-        /* 表格樣式 */
-        .table-container { background: var(--card); border-radius: 12px; border: 1px solid #334155; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; padding: 15px; color: #94a3b8; font-size: 0.85rem; border-bottom: 1px solid #334155; }
-        td { padding: 15px; border-bottom: 1px solid #334155; font-size: 0.9rem; }
-        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
-        .badge-pending { background: #78350f; color: #fbbf24; }
-        .badge-success { background: #064e3b; color: #34d399; }
+        /* 數據卡片 */
+        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: var(--card-bg); padding: 25px; border-radius: 10px; border: 1px solid var(--border); text-align: center; }
+        .stat-num { font-size: 2.2rem; font-weight: bold; color: var(--gold); display: block; }
+        .stat-title { color: var(--text-gray); font-size: 0.9rem; margin-top: 5px; }
+
+        /* 表格優化 */
+        .table-wrapper { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1a1a1a; color: var(--gold); padding: 18px; text-align: left; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+        td { padding: 18px; border-bottom: 1px solid var(--border); font-size: 0.95rem; color: #ddd; }
         
-        /* 圖片預覽小視窗 */
-        .img-preview { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; cursor: pointer; border: 1px solid #475569; }
+        /* 憑證縮圖 */
+        .doc-img { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; cursor: pointer; border: 1px solid #444; margin-right: 5px; }
+        .doc-img:hover { border-color: var(--gold); transform: scale(1.1); transition: 0.2s; }
+
+        /* 按鈕樣式 */
+        .btn-action { padding: 6px 15px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; margin-right: 5px; }
+        .btn-pass { background: #2ecc71; color: #000; }
+        .btn-reject { background: #e74c3c; color: #fff; }
 
         .hidden { display: none !important; }
-        button { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="sidebar-brand">通通借 <span style="font-size: 0.8rem; color: #64748b;">管理後台</span></div>
-    <div class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span>儀表板</div>
-    <div class="nav-item" onclick="showTab('cases')"><span class="nav-icon">📋</span>申請案件管理</div>
-    <div class="nav-item" onclick="showTab('repay')"><span class="nav-icon">✅</span>還款審核</div>
-    <div class="nav-item" onclick="showTab('books')"><span class="nav-icon">💰</span>出款帳本管理</div>
-    <div class="nav-item" style="margin-top: auto; color: #ef4444;" onclick="location.href='index.html'"><span class="nav-icon">🚪</span>登出系統</div>
-</div>
+<aside class="sidebar">
+    <div class="sidebar-header">金合舅 <span style="font-size: 0.7rem; display: block; color: #666;">JOJOPAY ADMIN</span></div>
+    <nav class="nav-menu">
+        <div class="nav-link active" onclick="switchTab('dash')"><span class="nav-icon">🏠</span>儀表板首頁</div>
+        <div class="nav-link" onclick="switchTab('cases')"><span class="nav-icon">📑</span>待審核案件</div>
+        <div class="nav-link" onclick="switchTab('bank')"><span class="nav-icon">🏦</span>撥款帳本</div>
+        <div class="nav-link" style="margin-top: 50px; color: #ff4d4d;" onclick="window.location.href='index.html'"><span class="nav-icon">🚪</span>系統登出</div>
+    </nav>
+</aside>
 
-<div class="main">
-    <div id="tab-dashboard">
-        <h2 style="margin-bottom: 25px;">系統總覽與即時統計</h2>
-        <div class="dashboard-grid">
-            <div class="stat-card"><span class="stat-value" id="stat-total">0</span><span class="stat-label">總申請數</span></div>
-            <div class="stat-card"><span class="stat-value" id="stat-pending" style="color:#fbbf24">0</span><span class="stat-label">待審核案件</span></div>
-            <div class="stat-card"><span class="stat-value" id="stat-approved" style="color:#34d399">0</span><span class="stat-label">已核准</span></div>
-            <div class="stat-card"><span class="stat-value" id="stat-today">0</span><span class="stat-label">今日申請</span></div>
+<main class="content">
+    <div id="tab-dash">
+        <div class="dashboard-header"><h1>總控數據中心</h1></div>
+        <div class="stats-container">
+            <div class="stat-card"><span class="stat-num" id="total-users">0</span><span class="stat-title">總註冊用戶</span></div>
+            <div class="stat-card"><span class="stat-num" id="pending-users" style="color: #ffcc00;">0</span><span class="stat-title">待處理審核</span></div>
+            <div class="stat-card"><span class="stat-num" id="approved-users" style="color: #2ecc71;">0</span><span class="stat-title">已核准撥款</span></div>
         </div>
-
-        <div class="table-container">
-            <h3>最近申請動態</h3>
+        
+        <div class="table-wrapper">
+            <div style="padding: 20px; background: #1a1a1a; font-weight: bold; color: var(--gold);">⚡ 最近申請動態</div>
             <table>
-                <thead><tr><th>姓名</th><th>手機</th><th>借款金額</th><th>狀態</th><th>操作</th></tr></thead>
-                <tbody id="recent-tbody"></tbody>
+                <thead><tr><th>申請人</th><th>手機號碼</th><th>狀態</th><th>申請時間</th><th>快速操作</th></tr></thead>
+                <tbody id="recent-list"></tbody>
             </table>
         </div>
     </div>
 
     <div id="tab-cases" class="hidden">
-        <h2>所有申請案件列表</h2>
-        <div class="table-container">
+        <div class="dashboard-header"><h1>待審核案件管理</h1></div>
+        <div class="table-wrapper">
             <table>
-                <thead><tr><th>ID</th><th>申請人</th><th>借款資訊</th><th>附件(證件/工作/學生)</th><th>狀態</th><th>管理動作</th></tr></thead>
-                <tbody id="full-tbody"></tbody>
+                <thead>
+                    <tr>
+                        <th>申請人資訊</th>
+                        <th>學校 / 工作</th>
+                        <th>附件憑證 (點擊放大)</th>
+                        <th>目前狀態</th>
+                        <th>審核動作</th>
+                    </tr>
+                </thead>
+                <tbody id="full-case-list"></tbody>
             </table>
         </div>
     </div>
-</div>
+
+    <div id="tab-bank" class="hidden">
+        <div class="dashboard-header"><h1>撥款帳本 (出款專用)</h1></div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>戶名</th>
+                        <th>銀行代碼</th>
+                        <th>分行名稱</th>
+                        <th>匯款帳號</th>
+                        <th>關聯手機</th>
+                    </tr>
+                </thead>
+                <tbody id="bank-list"></tbody>
+            </table>
+        </div>
+    </div>
+</main>
 
 <script>
-    // --- 請填入您的 Firebase 配置 ---
+    // --- Firebase 配置 ---
     const firebaseConfig = {
-      apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH",
+      apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH", 
       authDomain: "theone-zero.firebaseapp.com",
       projectId: "theone-zero",
       databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
@@ -92,68 +124,73 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function showTab(tabId) {
-        document.querySelectorAll('.main > div').forEach(d => d.classList.add('hidden'));
+    function switchTab(tabId) {
+        document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden'));
         document.getElementById('tab-' + tabId).classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         event.currentTarget.classList.add('active');
     }
 
-    // 監聽數據庫，即時更新後台
+    // 即時監聽數據
     db.ref('users').on('value', snap => {
-        const data = snap.val();
-        let total = 0, pending = 0, approved = 0;
-        let recentHtml = '', fullHtml = '';
+        const users = snap.val();
+        let counts = { total: 0, pending: 0, approved: 0 };
+        let recentHtml = '', fullHtml = '', bankHtml = '';
 
-        for(let key in data) {
-            const u = data[key];
-            if(!u.name) continue; // 跳過資料不全的測試帳號
+        for(let phone in users) {
+            const u = users[phone];
+            if(!u.name) continue; // 過濾掉空帳號
 
-            total++;
-            if(u.kycStatus === '審核中') pending++;
-            if(u.kycStatus === '已核准') approved++;
+            counts.total++;
+            if(u.kycStatus === '審核中') counts.pending++;
+            if(u.kycStatus === '已核准') counts.approved++;
 
-            const statusClass = u.kycStatus === '審核中' ? 'badge-pending' : 'badge-success';
-            const rowHtml = `
-                <tr>
-                    <td>${u.name}</td>
-                    <td>${u.phone}</td>
-                    <td>5,000 元</td>
-                    <td><span class="badge ${statusClass}">${u.kycStatus}</span></td>
-                    <td><button onclick="updateStatus('${u.phone}', '已核准')">核准</button></td>
-                </tr>
-            `;
-            recentHtml += rowHtml;
+            // 列表資料
+            const row = `<tr>
+                <td>${u.name}</td>
+                <td>${u.phone}</td>
+                <td style="color:${u.kycStatus==='審核中'?'#ffcc00':'#2ecc71'}">${u.kycStatus}</td>
+                <td>${u.submitTime || 'N/A'}</td>
+                <td><button class="btn-action btn-pass" onclick="updateUser('${u.phone}', '已核准')">准</button></td>
+            </tr>`;
+            recentHtml += row;
 
-            // 完整列表加入圖片查看
-            fullHtml += `
-                <tr>
-                    <td>#${u.phone.slice(-4)}</td>
-                    <td><b>${u.name}</b><br><small>${u.phone}</small></td>
-                    <td>5,000元<br><small>一個月</small></td>
-                    <td>
-                        ${u.idImg ? `<img src="${u.idImg}" class="img-preview" onclick="window.open(this.src)">` : ''}
-                        ${u.jobImg ? `<img src="${u.jobImg}" class="img-preview" onclick="window.open(this.src)">` : ''}
-                        ${u.schoolImg ? `<img src="${u.schoolImg}" class="img-preview" onclick="window.open(this.src)">` : ''}
-                    </td>
-                    <td><span class="badge ${statusClass}">${u.kycStatus}</span></td>
-                    <td>
-                        <button onclick="updateStatus('${u.phone}', '已核准')">通過</button>
-                        <button style="background:#475569" onclick="updateStatus('${u.phone}', '已拒絕')">拒絕</button>
-                    </td>
-                </tr>
-            `;
+            // 完整審核頁
+            fullHtml += `<tr>
+                <td><b>${u.name}</b><br><small>${u.phone}</small><br>Line: ${u.line || '無'}</td>
+                <td>🏫 ${u.school || '未填'}<br>💼 ${u.job || '未填'}</td>
+                <td>
+                    ${u.idImg ? `<img src="${u.idImg}" class="doc-img" onclick="window.open(this.src)">` : ''}
+                    ${u.jobImg ? `<img src="${u.jobImg}" class="doc-img" onclick="window.open(this.src)">` : ''}
+                    ${u.schoolImg ? `<img src="${u.schoolImg}" class="doc-img" onclick="window.open(this.src)">` : ''}
+                </td>
+                <td><span style="color:#ffcc00">${u.kycStatus}</span></td>
+                <td>
+                    <button class="btn-action btn-pass" onclick="updateUser('${u.phone}', '已核准')">核准撥款</button>
+                    <button class="btn-action btn-reject" onclick="updateUser('${u.phone}', '已拒絕')">拒絕</button>
+                </td>
+            </tr>`;
+
+            // 帳本頁 (這裡假設之後您會在前台收這些資料，目前先留空位)
+            bankHtml += `<tr>
+                <td>${u.name}</td>
+                <td>${u.bankCode || '008'}</td>
+                <td>${u.bankBranch || '台北分行'}</td>
+                <td style="letter-spacing:1px; color:var(--gold)">${u.bankAcc || '123-456-7890XXX'}</td>
+                <td>${u.phone}</td>
+            </tr>`;
         }
 
-        document.getElementById('stat-total').innerText = total;
-        document.getElementById('stat-pending').innerText = pending;
-        document.getElementById('stat-approved').innerText = approved;
-        document.getElementById('recent-tbody').innerHTML = recentHtml;
-        document.getElementById('full-tbody').innerHTML = fullHtml;
+        document.getElementById('total-users').innerText = counts.total;
+        document.getElementById('pending-users').innerText = counts.pending;
+        document.getElementById('approved-users').innerText = counts.approved;
+        document.getElementById('recent-list').innerHTML = recentHtml;
+        document.getElementById('full-case-list').innerHTML = fullHtml;
+        document.getElementById('bank-list').innerHTML = bankHtml;
     });
 
-    function updateStatus(phone, status) {
-        if(confirm(`確定將帳號 ${phone} 狀態更改為 ${status}？`)) {
+    function updateUser(phone, status) {
+        if(confirm(`確認將用戶 ${phone} 變更為 [${status}] 嗎？`)) {
             db.ref('users/' + phone).update({ kycStatus: status });
         }
     }
