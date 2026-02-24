@@ -3,57 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>金合舅 | 專業放款平台</title>
+    <title>金合舅 JOJOPAY | 專業貸款平台</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primary: #1a2a6c; --accent: #f2a900; --bg: #f4f7f6; --dark: #0f172a; }
-        body { font-family: 'PingFang TC', sans-serif; background: var(--bg); color: var(--dark); margin: 0; padding-bottom: 50px; }
-        header { background: var(--dark); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--accent); }
-        .nav-bar { background: #fff; padding: 10px; display: flex; justify-content: center; gap: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .nav-link { cursor: pointer; font-weight: bold; color: var(--primary); }
-        .container { max-width: 600px; margin: 30px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { border-left: 5px solid var(--primary); padding-left: 10px; color: var(--primary); }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #2a3a7c; }
-        .hidden { display: none !important; }
-        .ticker-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 0.9rem; }
+        :root { --primary: #d4af37; --secondary: #1a1a1a; --text: #ffffff; --accent: #f1c40f; }
+        body { font-family: 'PingFang TC', sans-serif; background: #000; color: var(--text); margin: 0; }
+        header { background: var(--secondary); padding: 25px; text-align: center; border-bottom: 3px solid var(--primary); }
+        .logo { font-size: 2rem; font-weight: bold; color: var(--primary); letter-spacing: 2px; }
+        .container { max-width: 500px; margin: 30px auto; background: #111; padding: 25px; border-radius: 12px; border: 1px solid #333; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .nav-bar { display: flex; justify-content: space-around; background: #222; padding: 15px; font-size: 0.9rem; }
+        .nav-item { cursor: pointer; color: var(--primary); }
+        .hidden { display: none; }
+        .status-box { padding: 15px; background: #222; border-radius: 8px; margin-top: 10px; border: 1px solid var(--primary); }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>金合舅 <span>JOJOPAY</span></h1>
-    <p>快速審核・誠信撥款・個資保密</p>
+    <div class="logo">金合舅 JOJOPAY</div>
+    <div style="font-size: 0.8rem; color: #888;">誠信・快速・金合舅</div>
 </header>
 
-<div class="nav-bar">
-    <div class="nav-link" onclick="showPage('apply-page')">線上申請</div>
-    <div class="nav-link" onclick="showPage('status-page')">進度查詢</div>
-    <div class="nav-link" onclick="showPage('info-page')">撥款快報</div>
+<div id="nav" class="nav-bar hidden">
+    <div class="nav-item" onclick="showPage('member-center')">會員中心</div>
+    <div class="nav-item" onclick="showPage('loan-page')">申請貸款</div>
+    <div class="nav-item" onclick="showPage('repay-page')">繳款回報</div>
+    <div class="nav-item" onclick="logout()">登出</div>
 </div>
 
-<div id="apply-page" class="container">
-    <h2>貸款申請單</h2>
-    <input type="text" id="app-name" placeholder="真實姓名">
-    <input type="text" id="app-phone" placeholder="行動電話">
-    <input type="text" id="app-line" placeholder="Line ID (重要)">
-    <input type="number" id="app-amount" placeholder="希望借款金額">
-    <textarea id="app-reason" placeholder="借款用途說明..."></textarea>
-    <button onclick="submitApplication()">送出申請單</button>
+<div id="auth-page" class="container">
+    <h2 id="auth-title">會員登入</h2>
+    <input type="text" id="auth-phone" placeholder="輸入手機號碼">
+    <input type="password" id="auth-pw" placeholder="輸入密碼">
+    <button onclick="handleAuth()">登入 / 註冊</button>
+    <p style="font-size: 0.8rem; color: #666; text-align: center;">第一次輸入將自動註冊帳號</p>
 </div>
 
-<div id="status-page" class="container hidden">
-    <h2>進度查詢</h2>
-    <input type="text" id="query-phone" placeholder="輸入申請時的手機號碼">
-    <button onclick="queryStatus()">立即查詢</button>
-    <div id="query-result" style="margin-top:20px; text-align:center;"></div>
+<div id="member-center" class="container hidden">
+    <h2>個人資料實名認證 (KYC)</h2>
+    <div id="kyc-form">
+        <input type="text" id="kyc-name" placeholder="真實姓名">
+        <input type="text" id="kyc-id" placeholder="身分證字號">
+        <input type="text" id="kyc-line" placeholder="Line ID">
+        <button onclick="submitKYC()">提交認證</button>
+    </div>
+    <div id="kyc-status" class="hidden">
+        <div class="status-box">
+            <p>認證狀態：<span id="display-status" style="color:var(--accent)">審核中</span></p>
+            <p>姓名：<span id="display-name"></span></p>
+        </div>
+    </div>
 </div>
 
-<div id="info-page" class="container hidden">
-    <h2>最新撥款動態</h2>
-    <div id="ticker-list">讀取中...</div>
+<div id="loan-page" class="container hidden">
+    <h2>申請貸款</h2>
+    <div id="loan-locked">
+        <p style="color: red;">⚠️ 請先完成實名認證後再申請貸款</p>
+    </div>
+    <div id="loan-form" class="hidden">
+        <input type="number" id="loan-amount" placeholder="希望申請金額">
+        <textarea id="loan-reason" placeholder="借款用途..."></textarea>
+        <button onclick="submitLoan()">提交貸款申請</button>
+    </div>
+</div>
+
+<div id="repay-page" class="container hidden">
+    <h2>繳款回報</h2>
+    <input type="number" id="repay-amount" placeholder="本次繳款金額">
+    <input type="text" id="repay-note" placeholder="匯款後五碼或備註">
+    <button onclick="submitRepay()">提交繳款證明</button>
 </div>
 
 <script>
@@ -68,53 +89,84 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    let currentUser = null;
 
     function showPage(id) {
         document.querySelectorAll('.container').forEach(p => p.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
-        if(id === 'info-page') loadTicker();
+        if(id === 'member-center' || id === 'loan-page') checkUserStatus();
     }
 
-    function submitApplication() {
-        const data = {
-            name: document.getElementById('app-name').value,
-            phone: document.getElementById('app-phone').value,
-            line: document.getElementById('app-line').value,
-            amount: document.getElementById('app-amount').value,
-            reason: document.getElementById('app-reason').value,
-            status: '審核中',
-            time: new Date().toLocaleString()
-        };
-        if(!data.name || !data.phone || !data.line) return alert("請填寫必填欄位");
-        
-        db.ref('loans').push(data).then(() => {
-            alert("提交成功！專員將盡快與您聯繫。");
-            showPage('status-page');
-        }).catch(err => {
-            alert("錯誤：資料庫連線失敗，請檢查規則。");
-            console.error(err);
+    function handleAuth() {
+        const phone = document.getElementById('auth-phone').value;
+        const pw = document.getElementById('auth-pw').value;
+        if(!phone || !pw) return alert("請輸入手機與密碼");
+
+        db.ref('users/' + phone).once('value', snap => {
+            if(snap.exists()) {
+                if(snap.val().pw === pw) {
+                    login(phone, snap.val());
+                } else { alert("密碼錯誤"); }
+            } else {
+                const newUser = { pw: pw, kyc: '未認證', phone: phone };
+                db.ref('users/' + phone).set(newUser).then(() => login(phone, newUser));
+            }
         });
     }
 
-    function queryStatus() {
-        const phone = document.getElementById('query-phone').value;
-        db.ref('loans').orderByChild('phone').equalTo(phone).once('value', snapshot => {
-            if(!snapshot.exists()) return document.getElementById('query-result').innerText = "查無資料。";
-            const item = Object.values(snapshot.val())[0];
-            document.getElementById('query-result').innerHTML = `<h3>狀態：${item.status}</h3><p>最後更新：${item.time}</p>`;
+    function login(phone, userData) {
+        currentUser = phone;
+        document.getElementById('auth-page').classList.add('hidden');
+        document.getElementById('nav').classList.remove('hidden');
+        showPage('member-center');
+    }
+
+    function checkUserStatus() {
+        db.ref('users/' + currentUser).on('value', snap => {
+            const user = snap.val();
+            if(user.kyc === '已認證') {
+                document.getElementById('kyc-form').classList.add('hidden');
+                document.getElementById('kyc-status').classList.remove('hidden');
+                document.getElementById('display-name').innerText = user.name;
+                document.getElementById('display-status').innerText = "✅ 已認證";
+                document.getElementById('loan-locked').classList.add('hidden');
+                document.getElementById('loan-form').classList.remove('hidden');
+            } else if (user.kyc === '審核中') {
+                document.getElementById('kyc-form').classList.add('hidden');
+                document.getElementById('kyc-status').classList.remove('hidden');
+                document.getElementById('display-status').innerText = "⏳ 認證審核中";
+            }
         });
     }
 
-    function loadTicker() {
-        db.ref('loans').limitToLast(10).once('value', snapshot => {
-            let html = "";
-            snapshot.forEach(child => {
-                const m = child.val();
-                if(m.status === '已撥款') html += `<div class="ticker-item">🎉 恭喜 ${m.name[0]}O${m.name.slice(-1)} 成功撥款 $${m.amount}</div>`;
-            });
-            document.getElementById('ticker-list').innerHTML = html || "目前尚無撥款資料。";
-        });
+    function submitKYC() {
+        const name = document.getElementById('kyc-name').value;
+        const idCard = document.getElementById('kyc-id').value;
+        const line = document.getElementById('kyc-line').value;
+        if(!name || !idCard || !line) return alert("請完整填寫資料");
+
+        db.ref('users/' + currentUser).update({
+            name: name, idCard: idCard, line: line, kyc: '審核中'
+        }).then(() => alert("資料已提交，請等待審核"));
     }
+
+    function submitLoan() {
+        const amount = document.getElementById('loan-amount').value;
+        const reason = document.getElementById('loan-reason').value;
+        db.ref('loan_apps').push({
+            user: currentUser, amount: amount, reason: reason, status: '待審核', time: new Date().toLocaleString()
+        }).then(() => alert("貸款申請已送出"));
+    }
+
+    function submitRepay() {
+        const amount = document.getElementById('repay-amount').value;
+        const note = document.getElementById('repay-note').value;
+        db.ref('repayments').push({
+            user: currentUser, amount: amount, note: note, time: new Date().toLocaleString()
+        }).then(() => alert("繳款證明已送出"));
+    }
+
+    function logout() { location.reload(); }
 </script>
 </body>
 </html>
