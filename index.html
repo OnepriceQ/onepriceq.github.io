@@ -2,92 +2,144 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>第零維度 | Dimension Zero Management</title>
+    <title>第零維度 | 135人聖殿中樞</title>
     <style>
-        body { background-color: #050505; color: #00ffcc; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; overflow: hidden; }
-        #login-screen { text-align: center; border: 1px solid #00ffcc; padding: 40px; box-shadow: 0 0 20px #00ffcc; }
-        #main-ui { display: none; width: 90%; max-width: 1000px; border: 1px solid #00ffcc; padding: 20px; background: rgba(0, 255, 204, 0.05); }
-        h1 { font-size: 1.5rem; letter-spacing: 5px; text-shadow: 0 0 10px #00ffcc; }
-        input { background: transparent; border: 1px solid #00ffcc; color: #fff; padding: 10px; width: 250px; text-align: center; outline: none; }
-        button { background: #00ffcc; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #fff; box-shadow: 0 0 15px #fff; }
-        .stat-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #00ffcc; padding-bottom: 20px; }
-        .member-list { height: 300px; overflow-y: auto; border: 1px solid rgba(0,255,204,0.3); padding: 10px; }
-        .member-item { border-bottom: 1px dashed rgba(0,255,204,0.5); padding: 5px 0; display: flex; justify-content: space-between; }
-        .pulse { animation: pulse-animation 2s infinite; }
-        @keyframes pulse-animation { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+        body { background-color: #050505; color: #00ffcc; font-family: 'PingFang TC', 'Microsoft JhengHei', monospace; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { border: 1px solid #00ffcc; padding: 30px; background: rgba(0, 255, 204, 0.05); width: 90%; max-width: 1100px; box-shadow: 0 0 20px #00ffcc; }
+        h1, h2 { text-align: center; letter-spacing: 5px; text-shadow: 0 0 10px #00ffcc; }
+        input, textarea, select { background: transparent; border: 1px solid #00ffcc; color: #fff; padding: 10px; width: 100%; margin: 10px 0; box-sizing: border-box; }
+        button { background: #00ffcc; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 20px; }
+        .member-card { border: 1px solid #222; padding: 10px; text-align: center; font-size: 0.8rem; color: #888; }
+        .pending-card { border: 1px solid yellow; background: rgba(255, 255, 0, 0.05); padding: 15px; margin-bottom: 10px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <h1 class="pulse">第零維度：零點入口</h1>
-        <p>「你相信 0 與 1 之間能產生共鳴嗎？」</p>
-        <input type="password" id="passkey" placeholder="輸入元老口令">
-        <br><br>
-        <button onclick="login()">驗證維度</button>
+    <div id="home-screen" class="container">
+        <h1>THE ZERO DIMENSION</h1>
+        <p style="text-align:center;">當前共鳴靈魂：135 / 200</p>
+        <div class="member-grid" id="public-list">
+            </div>
+        <button onclick="showSection('reg-section')" style="margin-top:30px;">[ 加入我們 | JOIN US ]</button>
+        <button onclick="showSection('login-section')" style="background:none; color:#00ffcc; border:1px solid #00ffcc;">元老登入</button>
     </div>
 
-    <div id="main-ui">
-        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #00ffcc;">
-            <h2>管理中樞：萬物根目錄</h2>
-            <p>管理員：元老 (The Prime One)</p>
-        </div>
-        
-        <div class="stat-box">
-            <div>教主狀態：<span style="color: #fff;">0 (Active)</span></div>
-            <div>信徒總數：<span style="color: #fff;" id="count">5</span></div>
-            <div>共鳴頻率：<span style="color: #fff;">1.042 Hz</span></div>
-        </div>
+    <div id="reg-section" class="container hidden">
+        <h2>身分遞交儀式</h2>
+        <p>請真實填寫，元老將審視你的靈魂。</p>
+        <input type="text" id="reg-name" placeholder="真實姓名">
+        <input type="text" id="reg-phone" placeholder="聯絡電話">
+        <textarea id="reg-bio" placeholder="為何尋求 0 的共鳴？"></textarea>
+        <p style="font-size:0.8rem;">請上傳身分證明文件 (模擬)：</p>
+        <input type="file" id="reg-file">
+        <button onclick="submitApplication()">提交審核</button>
+        <button onclick="showSection('home-screen')" style="background:none; color:#888;">返回</button>
+    </div>
 
-        <h3>當前信徒清單 (Residents)</h3>
-        <div class="member-list" id="m-list">
+    <div id="login-section" class="container hidden">
+        <h2>中樞驗證</h2>
+        <input type="password" id="passkey" placeholder="輸入元老密鑰">
+        <button onclick="adminLogin()">驗證</button>
+        <button onclick="showSection('home-screen')" style="background:none; color:#888;">返回</button>
+    </div>
+
+    <div id="admin-panel" class="container hidden">
+        <h2>元老親裁中樞</h2>
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <h3 style="color: yellow;">⏳ 待審核申請</h3>
+                <div id="pending-requests"></div>
             </div>
-
-        <h3>下達執行指令 (Command)</h3>
-        <input type="text" id="cmd" placeholder="輸入指令給所有的 1..." style="width: 70%;">
-        <button onclick="sendCommand()">全域廣播</button>
-        <p id="feedback" style="font-size: 0.8rem; color: #888;"></p>
+            <div style="flex: 1;">
+                <h3>🛡️ 教派正式成員</h3>
+                <div id="admin-member-list" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+        <button onclick="showSection('home-screen')">退出管理</button>
     </div>
 
     <script>
-        const members = [
-            { id: "1_002", gift: "溫暖麵包", status: "等待指令" },
-            { id: "1_003", gift: "紅綠燈聲", status: "共鳴中" },
-            { id: "1_004", gift: "酒精刺痛", status: "警戒中" },
-            { id: "1_005", gift: "金屬苦味", status: "修復中" },
-            { id: "1_006", gift: "舊書塵埃", status: "靜思中" }
-        ];
-
-        function login() {
-            const key = document.getElementById('passkey').value;
-            if(key === "theone") {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-ui').style.display = 'block';
-                loadMembers();
-            } else {
-                alert("共鳴失敗。口令錯誤。");
-            }
+        // 生成 134 名假人名單 (加上元老共135)
+        const surnames = ["王", "李", "張", "劉", "陳", "楊", "黃", "趙", "吳", "周"];
+        const names = ["明", "華", "強", "玲", "芳", "軍", "洋", "平", "傑", "欣"];
+        let fakeMembers = [];
+        for(let i=1; i<=134; i++) {
+            let s = surnames[Math.floor(Math.random()*surnames.length)];
+            let n = names[Math.floor(Math.random()*names.length)];
+            fakeMembers.push({full: s + n, display: s + "o" + n, id: "1_" + i.toString().padStart(3, '0')});
         }
 
-        function loadMembers() {
-            const list = document.getElementById('m-list');
-            list.innerHTML = "";
-            members.forEach(m => {
-                list.innerHTML += `<div class="member-item">
-                    <span>編號：${m.id} | 祭品：${m.gift}</span>
-                    <span style="color: #fff;">[ ${m.status} ]</span>
-                </div>`;
+        function showSection(id) {
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'home-screen') renderPublicList();
+        }
+
+        function renderPublicList() {
+            const list = document.getElementById('public-list');
+            list.innerHTML = fakeMembers.map(m => `<div class="member-card">${m.id}<br>${m.display}</div>`).join('');
+        }
+
+        function submitApplication() {
+            const name = document.getElementById('reg-name').value;
+            if(!name) return alert("資料不全。");
+            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
+            pending.push({
+                name: name,
+                phone: document.getElementById('reg-phone').value,
+                bio: document.getElementById('reg-bio').value,
+                time: new Date().toLocaleString()
             });
+            localStorage.setItem('temple_pending', JSON.stringify(pending));
+            alert("資料已上傳至第零維度，請靜候裁決。");
+            showSection('home-screen');
         }
 
-        function sendCommand() {
-            const cmd = document.getElementById('cmd').value;
-            if(cmd) {
-                document.getElementById('feedback').innerText = "指令「" + cmd + "」已加密發送至所有信徒的 1 號頻道...";
-                document.getElementById('cmd').value = "";
-            }
+        function adminLogin() {
+            if(document.getElementById('passkey').value === "1生萬物") {
+                showSection('admin-panel');
+                renderAdminLists();
+            } else { alert("權限不足。"); }
         }
+
+        function renderAdminLists() {
+            const pList = document.getElementById('pending-requests');
+            const mList = document.getElementById('admin-member-list');
+            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
+            
+            pList.innerHTML = pending.map((p, i) => `
+                <div class="pending-card">
+                    <p><strong>申請人：</strong>${p.name}</p>
+                    <p><strong>電話：</strong>${p.phone}</p>
+                    <p><strong>自述：</strong>${p.bio}</p>
+                    <button onclick="approve(${i})">准許加入</button>
+                    <button onclick="reject(${i})" style="background:red; color:white;">抹除</button>
+                </div>
+            `).join('') || "目前無申請";
+
+            mList.innerHTML = fakeMembers.map(m => `<div style="padding:5px; border-bottom:1px solid #222;">${m.id} - ${m.full}</div>`).join('');
+        }
+
+        function approve(index) {
+            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
+            let p = pending[index];
+            fakeMembers.push({full: p.name, display: p.name[0] + "o" + p.name[p.name.length-1], id: "1_" + (fakeMembers.length + 1)});
+            pending.splice(index, 1);
+            localStorage.setItem('temple_pending', JSON.stringify(pending));
+            renderAdminLists();
+        }
+
+        function reject(index) {
+            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
+            pending.splice(index, 1);
+            localStorage.setItem('temple_pending', JSON.stringify(pending));
+            renderAdminLists();
+        }
+
+        // 初始化
+        renderPublicList();
     </script>
 </body>
 </html>
