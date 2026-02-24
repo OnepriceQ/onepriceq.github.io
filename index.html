@@ -14,16 +14,14 @@
         .logo { font-size: 2.2rem; font-weight: bold; color: var(--primary); letter-spacing: 3px; }
         .container { max-width: 500px; margin: 20px auto; background: #111; padding: 25px; border-radius: 12px; border: 1px solid #333; }
         h2 { border-left: 4px solid var(--primary); padding-left: 10px; font-size: 1.3rem; margin-bottom: 20px; }
-        input, button, select, textarea { width: 100%; padding: 15px; margin: 10px 0; border-radius: 6px; box-sizing: border-box; }
-        input, select, textarea { background: #222; border: 1px solid #444; color: #fff; }
+        input, button, select { width: 100%; padding: 15px; margin: 10px 0; border-radius: 6px; box-sizing: border-box; }
+        input { background: #222; border: 1px solid #444; color: #fff; }
         button { background: var(--primary); color: #000; border: none; font-weight: bold; cursor: pointer; }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); margin-top: 5px; }
+        .hidden { display: none !important; }
+        .file-label { display: block; margin: 15px 0 5px; color: var(--primary); font-weight: bold; }
         .nav-bar { display: flex; justify-content: space-around; background: #222; padding: 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #333; }
         .nav-item { cursor: pointer; color: var(--primary); font-weight: bold; }
-        .hidden { display: none !important; }
-        .file-section { margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; }
-        .file-label { display: block; margin: 10px 0 5px; color: var(--primary); font-weight: bold; font-size: 0.9rem; }
-        .file-hint { font-size: 0.8rem; color: #aaa; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -61,47 +59,38 @@
         <input type="date" id="reg-birthday" title="出生年月日">
         <button onclick="verifyOTPAndRegister()">完成註冊</button>
     </div>
+    <button class="btn-outline" onclick="toggleAuth('login')">返回登入</button>
+</div>
+
+<div id="forgot-page" class="container hidden">
+    <h2>找回密碼驗證</h2>
+    <input type="text" id="f-phone" placeholder="註冊手機號碼">
+    <input type="text" id="f-id" placeholder="身分證字號">
+    <div class="file-label">出生年月日</div>
+    <input type="date" id="f-birthday">
+    <button onclick="handleVerifyForgot()">提交驗證</button>
+    
+    <div id="reset-area" class="hidden">
+        <hr style="border:0.5px solid #333; margin:20px 0;">
+        <input type="password" id="new-pw" placeholder="輸入新密碼">
+        <button onclick="handleResetPassword()">確認重設</button>
+    </div>
+    <button class="btn-outline" onclick="toggleAuth('login')">返回登入</button>
 </div>
 
 <div id="member-center" class="container hidden">
     <h2>實名認證 (KYC)</h2>
     <div id="kyc-form">
         <input type="text" id="kyc-name" placeholder="真實姓名">
-        <input type="text" id="kyc-line" placeholder="Line ID">
-        
-        <div class="file-section">
-            <div class="file-label">💼 工作資訊</div>
-            <input type="text" id="kyc-job" placeholder="目前工作單位/職稱">
-            <div class="file-hint">請上傳工作證、名片或薪資證明附件</div>
-            <input type="file" id="img-job-proof" accept="image/*">
-        </div>
-
-        <div class="file-section">
-            <div class="file-label">🎓 學校資訊</div>
-            <input type="text" id="kyc-school" placeholder="就讀學校/系級">
-            <div class="file-hint">請上傳學生證正反面附件</div>
-            <input type="file" id="img-school-proof" accept="image/*">
-        </div>
-
-        <div class="file-section">
-            <div class="file-label">📸 基礎證件 (必填)</div>
-            <div class="file-hint">身分證正反面與手持自拍</div>
-            <input type="file" id="img-id-front" accept="image/*">
-            <input type="file" id="img-id-back" accept="image/*">
-            <input type="file" id="img-selfie" accept="image/*">
-        </div>
-
-        <button onclick="submitKYC()">提交認證資料</button>
-    </div>
-    
-    <div id="kyc-status" class="hidden" style="text-align:center;">
-        <h3 style="color:var(--primary)">⏳ 資料審核中</h3>
-        <p>專員正在核對您的工作與學籍資料，請稍後。</p>
+        <input type="text" id="kyc-job" placeholder="工作單位">
+        <input type="file" id="img-job-proof" accept="image/*">
+        <input type="text" id="kyc-school" placeholder="就讀學校">
+        <input type="file" id="img-school-proof" accept="image/*">
+        <button onclick="submitKYC()">提交審核</button>
     </div>
 </div>
 
 <script>
-    // --- Firebase 配置 (請確保 API Key 正確) ---
     const firebaseConfig = {
       apiKey: "您的API_KEY",
       authDomain: "theone-zero.firebaseapp.com",
@@ -110,56 +99,61 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
+    let confirmationResult = null;
     let currentUser = null;
 
-    // --- 圖片轉 Base64 輔助函數 ---
-    const toBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-
-    // --- 提交 KYC 邏輯 ---
-    async function submitKYC() {
-        const name = document.getElementById('kyc-name').value;
-        const job = document.getElementById('kyc-job').value;
-        const school = document.getElementById('kyc-school').value;
+    // --- 核心切換函數：修復了這裡！ ---
+    function toggleAuth(pageName) {
+        // 先隱藏所有主要的 Auth 區塊
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('register-page').classList.add('hidden');
+        document.getElementById('forgot-page').classList.add('hidden');
         
-        if(!name || !job || !school) return alert("請填寫姓名、工作與學校資訊");
-
-        try {
-            alert("正在處理附件圖片，請勿關閉視窗...");
-            
-            const data = {
-                name: name,
-                job: job,
-                school: school,
-                lineID: document.getElementById('kyc-line').value,
-                kycStatus: '審核中',
-                submitTime: new Date().toLocaleString()
-            };
-
-            // 處理上傳附件
-            const jobFile = document.getElementById('img-job-proof').files[0];
-            const schoolFile = document.getElementById('img-school-proof').files[0];
-            const idFront = document.getElementById('img-id-front').files[0];
-
-            if(jobFile) data.jobImg = await toBase64(jobFile);
-            if(schoolFile) data.schoolImg = await toBase64(schoolFile);
-            if(idFront) data.idFrontImg = await toBase64(idFront);
-
-            await db.ref('users/' + currentUser).update(data);
-            alert("資料已成功送審！");
-            showPage('member-center'); // 更新狀態顯示
-        } catch (err) {
-            alert("上傳失敗，請檢查網路或圖片大小");
-            console.error(err);
+        // 顯示被點擊的那一個
+        document.getElementById(pageName + '-page').classList.remove('hidden');
+        
+        // 如果是註冊頁，初始化機器人驗證
+        if(pageName === 'register' && !window.recaptchaVerifier) {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
         }
     }
 
-    // --- 其他邏輯保持不變 (handleLogin, sendOTP 等) ---
-    // ... [請保留您之前的所有 Auth 邏輯] ...
+    // --- 頁面顯示邏輯 ---
+    function showPage(id) {
+        document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    // --- 登入邏輯 ---
+    function handleLogin() {
+        const phone = document.getElementById('login-phone').value;
+        const pw = document.getElementById('login-pw').value;
+        db.ref('users/' + phone).once('value', snap => {
+            if(snap.exists() && snap.val().pw === pw) {
+                currentUser = phone;
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('nav').classList.remove('hidden');
+                showPage('member-center');
+            } else { alert("帳號或密碼錯誤"); }
+        });
+    }
+
+    // 忘記密碼驗證邏輯
+    function handleVerifyForgot() {
+        const phone = document.getElementById('f-phone').value;
+        const id = document.getElementById('f-id').value;
+        const bday = document.getElementById('f-birthday').value;
+        db.ref('users/' + phone).once('value', snap => {
+            const u = snap.val();
+            if(u && u.idNum === id && u.birthday === bday) {
+                document.getElementById('reset-area').classList.remove('hidden');
+            } else { alert("資料核對失敗"); }
+        });
+    }
+
+    // (其餘發送 OTP、註冊、KYC 函數請保持跟之前版本一樣...)
+    function logout() { location.reload(); }
 </script>
 </body>
 </html>
