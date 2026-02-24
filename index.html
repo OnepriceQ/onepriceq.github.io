@@ -63,7 +63,8 @@
       projectId: "theone-zero",
       storageBucket: "theone-zero.firebasestorage.app",
       messagingSenderId: "1067669012841",
-      appId: "1:1067669012841:web:1694da76f172c6"
+      appId: "1:1067669012841:web:1694da76f172c6",
+      databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -85,9 +86,13 @@
             time: new Date().toLocaleString()
         };
         if(!data.name || !data.phone || !data.line) return alert("請填寫必填欄位");
+        
         db.ref('loans').push(data).then(() => {
-            alert("提交成功，請等候專員聯繫。");
+            alert("提交成功！專員將盡快與您聯繫。");
             showPage('status-page');
+        }).catch(err => {
+            alert("錯誤：資料庫連線失敗，請檢查規則。");
+            console.error(err);
         });
     }
 
@@ -107,7 +112,7 @@
                 const m = child.val();
                 if(m.status === '已撥款') html += `<div class="ticker-item">🎉 恭喜 ${m.name[0]}O${m.name.slice(-1)} 成功撥款 $${m.amount}</div>`;
             });
-            document.getElementById('ticker-list').innerHTML = html || "尚無撥款資料。";
+            document.getElementById('ticker-list').innerHTML = html || "目前尚無撥款資料。";
         });
     }
 </script>
