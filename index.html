@@ -13,14 +13,18 @@
         header { background: var(--secondary); padding: 25px; text-align: center; border-bottom: 3px solid var(--primary); }
         .logo { font-size: 2.2rem; font-weight: bold; color: var(--primary); letter-spacing: 3px; }
         .container { max-width: 500px; margin: 20px auto; background: #111; padding: 25px; border-radius: 12px; border: 1px solid #333; }
+        h2 { border-left: 4px solid var(--primary); padding-left: 10px; font-size: 1.3rem; margin-bottom: 20px; }
         input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 6px; box-sizing: border-box; }
         input { background: #222; border: 1px solid #444; color: #fff; }
-        button { background: var(--primary); color: #000; border: none; font-weight: bold; cursor: pointer; }
+        button { background: var(--primary); color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #f1c40f; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); margin-top: 5px; }
         .nav-bar { display: flex; justify-content: space-around; background: #222; padding: 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #333; }
         .nav-item { cursor: pointer; color: var(--primary); font-weight: bold; }
         .hidden { display: none !important; }
-        .line-notice { border: 1px solid var(--error); color: var(--error); padding: 10px; font-size: 0.85rem; margin-bottom: 15px; }
-        hr { border: 0.5px solid #333; margin: 25px 0; }
+        .line-notice { border: 1px solid var(--error); color: var(--error); padding: 10px; font-size: 0.85rem; margin-bottom: 15px; border-radius: 5px; }
+        .file-label { display: block; margin: 20px 0 5px; color: var(--primary); font-weight: bold; }
+        .file-hint { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -36,37 +40,77 @@
     <div class="nav-item" onclick="logout()">登出</div>
 </div>
 
-<div id="auth-page" class="container">
-    <h2 id="auth-ui-title">會員進入</h2>
-    
-    <div id="step-1">
-        <input type="text" id="auth-phone" placeholder="手機號碼 (例: 0912345678)">
-        <button onclick="checkUserExists()">下一步</button>
-    </div>
+<div id="login-page" class="container">
+    <h2>會員登入</h2>
+    <input type="text" id="login-phone" placeholder="手機號碼">
+    <input type="password" id="login-pw" placeholder="密碼">
+    <button onclick="handleLogin()">登入</button>
+    <button class="btn-outline" onclick="toggleAuth('register')">沒有帳號？立即註冊</button>
+</div>
 
-    <div id="step-login" class="hidden">
-        <p>歡迎回來，請輸入密碼：</p>
-        <input type="password" id="login-pw" placeholder="密碼">
-        <button onclick="loginWithPassword()">登入</button>
+<div id="register-page" class="container hidden">
+    <h2>新會員註冊</h2>
+    <div id="reg-step-1">
+        <input type="text" id="reg-phone" placeholder="手機號碼 (例: 0912345678)">
+        <div id="recaptcha-container"></div>
+        <button id="send-otp-btn" onclick="sendOTP()">發送簡訊驗證碼</button>
     </div>
-
-    <div id="step-register" class="hidden">
-        <p style="color:var(--primary)">首次申請，請驗證手機：</p>
-        <div id="recaptcha-container"></div> <button id="send-otp-btn" onclick="sendOTP()">發送簡訊驗證碼</button>
-        
-        <div id="otp-confirm-area" class="hidden">
-            <input type="text" id="otp-code" placeholder="輸入 6 位數簡訊代碼">
-            <input type="password" id="reg-pw" placeholder="設定您的登入密碼">
-            <button onclick="verifyOTPAndRegister()">完成驗證並註冊</button>
-        </div>
+    <div id="reg-step-2" class="hidden">
+        <p style="color:var(--primary)">驗證碼已送出</p>
+        <input type="text" id="otp-code" placeholder="輸入 6 位數驗證碼">
+        <input type="password" id="reg-pw" placeholder="設定登入密碼">
+        <button onclick="verifyOTPAndRegister()">驗證並完成註冊</button>
     </div>
+    <button class="btn-outline" onclick="toggleAuth('login')">已有帳號？返回登入</button>
 </div>
 
 <div id="member-center" class="container hidden">
     <h2>實名認證 (KYC)</h2>
+    <div id="kyc-form">
+        <input type="text" id="kyc-name" placeholder="真實姓名">
+        <input type="text" id="kyc-id" placeholder="身分證字號">
+        <input type="text" id="kyc-line" placeholder="Line ID">
+        <div class="line-notice">
+            ⚠️ <b>Line 設定提示：</b><br>
+            請開啟「允許利用 ID 加入好友」並關閉「阻擋陌生訊息」。
+        </div>
+        <div class="file-label">📸 本人證件正反面</div>
+        <input type="file" id="img-id-front" accept="image/*">
+        <input type="file" id="img-id-back" accept="image/*">
+        <div class="file-label">📸 父母/扶養者證件正反面</div>
+        <div class="file-hint">父母雙亡請附戶口名簿</div>
+        <input type="file" id="img-parent-front" accept="image/*">
+        <input type="file" id="img-parent-back" accept="image/*">
+        <div class="file-label">🤳 手持證件自拍照</div>
+        <div class="file-hint">手寫字條：本人 (姓名) 於 2026/02/28 申請 JOJO 會員</div>
+        <input type="file" id="img-selfie" accept="image/*">
+        <button onclick="submitKYC()">提交認證資料</button>
     </div>
+    <div id="kyc-status" class="hidden">
+        <div class="container" style="text-align:center; border:none;">
+            <h3 style="color:var(--primary)">⏳ 資料審核中</h3>
+            <p>專員將盡快透過 Line 聯繫您，請保持通訊開啟。</p>
+        </div>
+    </div>
+</div>
+
+<div id="loan-page" class="container hidden">
+    <h2>申請貸款</h2>
+    <div id="loan-form">
+        <input type="number" id="loan-amount" placeholder="希望借款金額">
+        <textarea id="loan-reason" placeholder="借款用途" style="width:100%; background:#222; color:#fff; border-radius:6px; padding:10px;"></textarea>
+        <button onclick="submitLoan()">確認申請</button>
+    </div>
+</div>
+
+<div id="repay-page" class="container hidden">
+    <h2>繳款回報</h2>
+    <input type="number" id="repay-amount" placeholder="繳款金額">
+    <button onclick="submitRepay()">提交回報</button>
+</div>
 
 <script>
+    // --- Firebase 配置 ---
     const firebaseConfig = {
       apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH",
       authDomain: "theone-zero.firebaseapp.com",
@@ -76,82 +120,84 @@
       appId: "1:1067669012841:web:1694da76f172c6",
       databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const auth = firebase.auth();
+    let currentUser = null;
     let confirmationResult = null;
-    let tempPhone = "";
 
-    // 1. 檢查用戶是否存在
-    function checkUserExists() {
-        tempPhone = document.getElementById('auth-phone').value;
-        if(!tempPhone) return alert("請輸入手機");
-
-        db.ref('users/' + tempPhone).once('value', snap => {
-            document.getElementById('step-1').classList.add('hidden');
-            if(snap.exists()) {
-                // 老客戶
-                document.getElementById('step-login').classList.remove('hidden');
-            } else {
-                // 新客戶
-                document.getElementById('step-register').classList.remove('hidden');
-                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
-            }
-        });
+    // --- 切換登入註冊 ---
+    function toggleAuth(type) {
+        if(type === 'register') {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('register-page').classList.remove('hidden');
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
+        } else {
+            document.getElementById('register-page').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+        }
     }
 
-    // 2. 老客戶密碼登入
-    function loginWithPassword() {
+    // --- 登入邏輯 ---
+    function handleLogin() {
+        const phone = document.getElementById('login-phone').value;
         const pw = document.getElementById('login-pw').value;
-        db.ref('users/' + tempPhone).once('value', snap => {
-            if(snap.val().pw === pw) {
-                enterSystem(tempPhone);
-            } else { alert("密碼錯誤"); }
+        db.ref('users/' + phone).once('value', snap => {
+            if(snap.exists() && snap.val().pw === pw) {
+                enterSystem(phone);
+            } else { alert("手機或密碼錯誤"); }
         });
     }
 
-    // 3. 新客戶發送簡訊
+    // --- 註冊 OTP 邏輯 ---
     function sendOTP() {
-        const fullPhone = "+886" + tempPhone.substring(1); // 轉成國際格式
+        const phone = document.getElementById('reg-phone').value;
+        if(!phone) return alert("請輸入手機");
+        const fullPhone = "+886" + phone.substring(1);
         auth.signInWithPhoneNumber(fullPhone, window.recaptchaVerifier)
             .then(result => {
                 confirmationResult = result;
-                alert("簡訊已發送");
-                document.getElementById('send-otp-btn').classList.add('hidden');
-                document.getElementById('otp-confirm-area').classList.remove('hidden');
-            }).catch(err => alert("發送失敗: " + err.message));
+                alert("簡訊已送出");
+                document.getElementById('reg-step-1').classList.add('hidden');
+                document.getElementById('reg-step-2').classList.remove('hidden');
+            }).catch(err => alert("失敗: " + err.message));
     }
 
-    // 4. 驗證簡訊並存檔
     function verifyOTPAndRegister() {
         const code = document.getElementById('otp-code').value;
         const pw = document.getElementById('reg-pw').value;
-        if(!code || !pw) return alert("請填寫完整");
-
-        confirmationResult.confirm(code).then(result => {
-            // 驗證成功，存入資料庫
-            db.ref('users/' + tempPhone).set({
-                phone: tempPhone,
-                pw: pw,
-                kycStatus: '未認證',
-                regTime: new Date().toLocaleString()
-            }).then(() => enterSystem(tempPhone));
-        }).catch(err => alert("代碼錯誤"));
+        const phone = document.getElementById('reg-phone').value;
+        confirmationResult.confirm(code).then(() => {
+            db.ref('users/' + phone).set({ phone: phone, pw: pw, kycStatus: '未認證' }).then(() => enterSystem(phone));
+        }).catch(() => alert("驗證碼錯誤"));
     }
 
+    // --- 進入系統 ---
     function enterSystem(phone) {
         currentUser = phone;
-        document.getElementById('auth-page').classList.add('hidden');
+        document.querySelectorAll('.container').forEach(p => p.classList.add('hidden'));
         document.getElementById('nav').classList.remove('hidden');
         showPage('member-center');
-        alert("成功進入金合舅系統");
     }
 
     function showPage(id) {
         document.querySelectorAll('.container').forEach(p => p.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
+        // 檢查 KYC 狀態決定顯示表單或狀態
+        if(id === 'member-center') {
+            db.ref('users/' + currentUser).on('value', snap => {
+                if(snap.val().kycStatus !== '未認證') {
+                    document.getElementById('kyc-form').classList.add('hidden');
+                    document.getElementById('kyc-status').classList.remove('hidden');
+                }
+            });
+        }
     }
+
+    // (KYC 上傳、貸款、繳款函數與之前一致，此處略以維持長度)
+    // ... [請保留您之前的 submitKYC, toBase64, submitLoan 等函數] ...
+
+    function logout() { location.reload(); }
 </script>
 </body>
 </html>
