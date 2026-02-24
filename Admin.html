@@ -7,29 +7,33 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; background: #222; color: #fff; padding: 20px; }
-        .login-box { max-width: 300px; margin: 100px auto; text-align: center; }
-        .admin-panel { max-width: 900px; margin: 0 auto; background: #333; padding: 20px; border-radius: 8px; }
-        .card { background: #444; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 5px solid #f2a900; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 3px; }
-        .btn-approve { background: #28a745; color: white; }
-        .btn-reject { background: #dc3545; color: white; margin-left: 10px; }
+        body { font-family: sans-serif; background: #0f172a; color: #fff; padding: 20px; margin: 0; }
+        .login-box { max-width: 320px; margin: 150px auto; text-align: center; background: #1e293b; padding: 30px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .admin-panel { max-width: 900px; margin: 20px auto; background: #1e293b; padding: 25px; border-radius: 8px; }
+        .card { background: #334155; padding: 20px; margin-bottom: 15px; border-radius: 8px; border-left: 6px solid #f2a900; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 5px; box-sizing: border-box; }
+        button { padding: 12px 25px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-approve { background: #10b981; color: white; }
+        .btn-reject { background: #ef4444; color: white; margin-left: 10px; }
         .hidden { display: none !important; }
+        h2 { color: #f2a900; }
     </style>
 </head>
 <body>
 
 <div id="login-screen" class="login-box">
-    <h2>系統管理登入</h2>
-    <input type="password" id="admin-pass" placeholder="輸入管理密碼">
-    <button onclick="checkLogin()" style="width:100%; background: #f2a900;">登入</button>
+    <h2>🔒 系統登入</h2>
+    <input type="password" id="admin-pass" placeholder="管理員密碼">
+    <button onclick="checkLogin()" style="width:100%; background: #f2a900; color: #000;">驗證並登入</button>
 </div>
 
 <div id="panel-screen" class="admin-panel hidden">
-    <h2>案件審核中樞</h2>
-    <div id="data-list">加載中...</div>
-    <button onclick="location.reload()" style="margin-top:20px;">刷新頁面</button>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>📊 貸款案件審核中樞</h2>
+        <button onclick="location.reload()" style="background:#475569; color:white;">刷新資料</button>
+    </div>
+    <hr style="border:0.5px solid #475569; margin: 20px 0;">
+    <div id="data-list">案件加載中...</div>
 </div>
 
 <script>
@@ -39,7 +43,8 @@
       projectId: "theone-zero",
       storageBucket: "theone-zero.firebasestorage.app",
       messagingSenderId: "1067669012841",
-      appId: "1:1067669012841:web:1694da76f172c6"
+      appId: "1:1067669012841:web:1694da76f172c6",
+      databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -49,27 +54,35 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('panel-screen').classList.remove('hidden');
             loadData();
-        } else { alert("密碼錯誤"); }
+        } else { alert("密碼錯誤，請重新輸入。"); }
     }
 
     function loadData() {
         db.ref('loans').on('value', snapshot => {
             let html = "";
+            if(!snapshot.exists()) {
+                document.getElementById('data-list').innerHTML = "<p>目前尚無任何進件申請。</p>";
+                return;
+            }
             snapshot.forEach(child => {
                 const m = child.val();
                 const k = child.key;
                 html += `
                 <div class="card">
-                    <p><strong>客戶：${m.name}</strong> | 手機：${m.phone}</p>
-                    <p><strong>Line ID：${m.line}</strong> | 金額：$${m.amount}</p>
-                    <p>用途：${m.reason}</p>
-                    <p>目前狀態：<span style="color:#f2a900">${m.status}</span></p>
-                    <button class="btn-approve" onclick="update('${k}','已撥款')">核准撥款</button>
-                    <button class="btn-reject" onclick="update('${k}','不符資格')">駁回案件</button>
-                    <button onclick="del('${k}')" style="background:#666; color:#fff; margin-left:10px;">刪除資料</button>
+                    <p style="font-size: 1.1rem;"><strong>申請人：${m.name}</strong> <span style="font-size:0.8rem; color:#94a3b8;">(${m.time})</span></p>
+                    <p>📱 手機號碼：${m.phone}</p>
+                    <p>💬 Line ID：<span style="color:#10b981; font-weight:bold;">${m.line}</span></p>
+                    <p>💰 申請金額：$${m.amount}</p>
+                    <p>📝 借款說明：${m.reason || '無'}</p>
+                    <p>🚩 目前狀態：<span style="color:#f2a900; font-weight:bold;">${m.status}</span></p>
+                    <div style="margin-top:15px;">
+                        <button class="btn-approve" onclick="update('${k}','已撥款')">核准撥款</button>
+                        <button class="btn-reject" onclick="update('${k}','不符資格')">拒絕申請</button>
+                        <button onclick="del('${k}')" style="background:#64748b; color:#fff; margin-left:10px;">刪除紀錄</button>
+                    </div>
                 </div>`;
             });
-            document.getElementById('data-list').innerHTML = html || "暫無案件。";
+            document.getElementById('data-list').innerHTML = html;
         });
     }
 
@@ -78,9 +91,8 @@
     }
     
     function del(key) {
-        if(confirm("確定永久刪除此客戶資料？")) db.ref('loans/' + key).remove();
+        if(confirm("確定要永久刪除此客戶的資料嗎？")) db.ref('loans/' + key).remove();
     }
 </script>
 </body>
 </html>
-
