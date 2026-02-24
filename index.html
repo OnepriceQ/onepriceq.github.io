@@ -1,136 +1,141 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>金合舅 JoJoPAY | 快速申請</title>
+    <title>金合舅 JoJoPAY | 會員門戶</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --accent: #6366f1; --bg: #0b0c12; --card: #1a1b26; --text: #ffffff; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: auto; }
-        .step-bar { display: flex; justify-content: space-between; margin-bottom: 30px; }
-        .step { width: 35px; height: 35px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #888; }
-        .step.active { background: #4ade80; color: #000; font-weight: bold; }
-        .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid #2a2b36; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
-        h2 { font-size: 22px; margin: 0 0 10px 0; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-size: 14px; color: #a0a0a0; margin-bottom: 8px; }
-        input, select { width: 100%; padding: 14px; background: #242533; border: 1px solid #333; border-radius: 12px; color: #fff; box-sizing: border-box; outline: none; }
-        .btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 12px; color: #fff; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn:active { transform: scale(0.98); }
+        :root { --accent: #6366f1; --bg: #0b0c12; --card: #1a1b26; --text: #ffffff; --success: #4ade80; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 90%; max-width: 400px; }
+        .card { background: var(--card); border-radius: 24px; padding: 30px; border: 1px solid #2a2b36; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .logo { text-align: center; font-size: 26px; font-weight: bold; color: var(--accent); letter-spacing: 2px; margin-bottom: 30px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
+        input { width: 100%; padding: 14px; background: #242533; border: 1px solid #333; border-radius: 12px; color: #fff; box-sizing: border-box; outline: none; }
+        
+        .verify-row { display: flex; gap: 8px; }
+        .btn-send { background: #333; border: none; color: #fff; border-radius: 10px; padding: 0 15px; font-size: 12px; white-space: nowrap; cursor: pointer; }
+        
+        .btn-main { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 12px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .link-group { display: flex; justify-content: space-between; margin-top: 20px; font-size: 13px; color: var(--accent); cursor: pointer; }
+        
+        .status-box { text-align: center; padding: 25px; border-radius: 15px; background: rgba(255,255,255,0.05); border: 1px dashed #444; margin-top: 20px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="step-bar">
-            <div class="step active">1</div><div class="step">2</div><div class="step">3</div><div class="step">4</div><div class="step">5</div>
-        </div>
-        <div class="card">
-            <h2>基本資料填寫</h2>
-            <p style="color:#666; font-size: 13px; margin-bottom: 25px;">完成首步填寫，即可建立您的帳號</p>
-            <div class="form-group"><label>真實姓名</label><input type="text" id="name" placeholder="請輸入姓名"></div>
-            <div class="form-group"><label>手機號碼 (密碼)</label><input type="tel" id="phone" placeholder="0912345678"></div>
-            <div class="form-group"><label>身分證字號 (帳號)</label><input type="text" id="idCard" placeholder="E123456789"></div>
-            <button class="btn" onclick="submitApply()">送出申請並建立帳號</button>
-        </div>
-    </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH", 
-            databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+<div class="container">
+    <div class="logo">JoJoPAY</div>
 
-        function submitApply() {
-            const phone = document.getElementById('phone').value;
-            const data = {
-                name: document.getElementById('name').value,
-                phone: phone,
-                idCard: document.getElementById('idCard').value,
-                status: '待審核',
-                submitTime: new Date().toLocaleString()
-            };
-            if(!phone || !data.name) return alert("請完整填寫");
-            db.ref('users/' + phone).set(data).then(() => {
-                alert("申請成功！請靜候專員審核通知。");
-            });
-        }
-    </script>
-</body>
-</html>
-
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>通通借 | 快速借貸系統</title>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <style>
-        :root { --accent: #6366f1; --bg: #0f1016; --card: #1c1d29; --text: #ffffff; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: auto; }
-        .step-bar { display: flex; justify-content: space-between; margin-bottom: 30px; }
-        .step { width: 35px; height: 35px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .step.active { background: #4ade80; color: #000; }
-        .card { background: var(--card); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { font-size: 24px; margin-bottom: 10px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #a0a0a0; }
-        input, select { width: 100%; padding: 12px; background: #2d2d3d; border: 1px solid #3d3d4d; border-radius: 10px; color: #fff; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 10px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="step-bar">
-            <div class="step active">1</div><div class="step">2</div><div class="step">3</div><div class="step">4</div><div class="step">5</div>
-        </div>
-        <div class="card">
-            <h2>開始申請</h2>
-            <p style="color:#888;">請填寫基本資料以建立帳號</p>
-            <div class="form-group">
-                <label>真實姓名</label>
-                <input type="text" id="name" placeholder="請輸入姓名">
-            </div>
-            <div class="form-group">
-                <label>手機號碼 (登入密碼)</label>
-                <input type="tel" id="phone" placeholder="0912345678">
-            </div>
-            <div class="form-group">
-                <label>身分證字號 (登入帳號)</label>
-                <input type="text" id="idCard" placeholder="E123456789">
-            </div>
-            <button class="btn" onclick="submitApply()">送出申請</button>
+    <div id="view-login" class="card">
+        <h3 style="text-align:center; margin-top:0;">會員登入</h3>
+        <div class="form-group"><label>身分證字號</label><input type="text" id="login-id" placeholder="帳號"></div>
+        <div class="form-group"><label>密碼 (手機號碼)</label><input type="password" id="login-pw" placeholder="密碼"></div>
+        <button class="btn-main" onclick="handleLogin()">立即登入</button>
+        <div class="link-group">
+            <span onclick="showView('register')">註冊新會員</span>
+            <span onclick="alert('請聯繫專員重設密碼')">忘記密碼？</span>
         </div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY", // <--- 務必更換為您的正確密鑰
-            databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <div id="view-register" class="card hidden">
+        <h3 style="margin-top:0">會員註冊 / KYC</h3>
+        <div class="form-group"><label>真實姓名</label><input type="text" id="reg-name"></div>
+        <div class="form-group"><label>手機號碼</label>
+            <div class="verify-row">
+                <input type="tel" id="reg-phone" placeholder="09...">
+                <button class="btn-send" onclick="alert('驗證碼已發送：1234')">發送驗證碼</button>
+            </div>
+        </div>
+        <div class="form-group"><label>簡訊驗證碼</label><input type="text" id="reg-otp" placeholder="請輸入 1234"></div>
+        <div class="form-group"><label>身分證字號</label><input type="text" id="reg-id"></div>
+        <button class="btn-main" onclick="handleRegister()">提交審核</button>
+        <div class="link-group" style="justify-content:center;">
+            <span onclick="showView('login')">已有帳號？返回登入</span>
+        </div>
+    </div>
 
-        function submitApply() {
-            const phone = document.getElementById('phone').value;
-            const data = {
-                name: document.getElementById('name').value,
-                phone: phone,
-                idCard: document.getElementById('idCard').value,
-                status: '待審核',
-                submitTime: new Date().toLocaleString()
-            };
-            if(!data.name || !phone) return alert("請完整填寫");
-            db.ref('users/' + phone).set(data).then(() => {
-                alert("申請成功！您的帳號已自動建立。");
-            });
-        }
-    </script>
+    <div id="view-member" class="card hidden">
+        <h2 id="user-welcome" style="margin-top:0;">您好</h2>
+        <div id="box-pending" class="status-box">
+            <p style="color:#fbbf24; font-weight:bold;">⏳ 帳號審核中</p>
+            <p style="font-size:13px; color:#888;">您的 KYC 資料已提交，請靜候專員審核通過後即可開啟借貸功能。</p>
+        </div>
+        <div id="box-approved" class="hidden">
+            <div style="background:rgba(74,222,128,0.1); padding:15px; border-radius:12px; margin-bottom:20px; text-align:center;">
+                <span style="color:var(--success);">✅ 您的帳號已核准</span>
+            </div>
+            <button class="btn-main" style="background:var(--success); color:#000;" onclick="alert('進入撥款申請流程...')">💰 立即申請撥款</button>
+            <button class="btn-main" style="background:#2d2d3d; margin-top:10px;">📊 查看還款帳本</button>
+        </div>
+        <button class="btn-main" style="background:transparent; border:1px solid #333; margin-top:30px;" onclick="location.reload()">安全登出</button>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH", 
+        databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function showView(view) {
+        document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+        document.getElementById('view-' + view).classList.remove('hidden');
+    }
+
+    // 註冊邏輯
+    function handleRegister() {
+        const otp = document.getElementById('reg-otp').value;
+        const phone = document.getElementById('reg-phone').value;
+        const name = document.getElementById('reg-name').value;
+        const idCard = document.getElementById('reg-id').value;
+
+        if(otp !== "1234") return alert("簡訊驗證碼錯誤！");
+        if(!phone || !name || !idCard) return alert("請完整填寫資料");
+
+        const userData = {
+            name: name,
+            phone: phone,
+            idCard: idCard,
+            status: '待審核', // 預設狀態
+            submitTime: new Date().toLocaleString()
+        };
+
+        // 以身分證作為帳號 Key
+        db.ref('users/' + idCard).set(userData).then(() => {
+            alert("註冊成功！請等待人工審核。");
+            showView('login');
+        });
+    }
+
+    // 登入邏輯
+    function handleLogin() {
+        const id = document.getElementById('login-id').value;
+        const pw = document.getElementById('login-pw').value;
+
+        db.ref('users/' + id).once('value', snap => {
+            const user = snap.val();
+            if(user && user.phone === pw) {
+                document.getElementById('user-welcome').innerText = "您好，" + user.name;
+                showView('member');
+                
+                // 根據後台設定的 status 切換功能
+                if(user.status === '已核准' || user.status === '已撥款') {
+                    document.getElementById('box-pending').classList.add('hidden');
+                    document.getElementById('box-approved').classList.remove('hidden');
+                }
+            } else {
+                alert("身分證字號或密碼錯誤");
+            }
+        });
+    }
+</script>
 </body>
 </html>
