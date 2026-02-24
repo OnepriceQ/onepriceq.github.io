@@ -5,151 +5,135 @@
     <title>第零維度 | THE ONE SOVEREIGN</title>
     <style>
         body { background-color: #050505; color: #00ffcc; font-family: 'PingFang TC', 'Microsoft JhengHei', monospace; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .container { border: 1px solid #00ffcc; padding: 30px; background: rgba(0, 255, 204, 0.05); width: 90%; max-width: 1100px; box-shadow: 0 0 20px #00ffcc; border-radius: 2px; }
+        .container { border: 1px solid #00ffcc; padding: 30px; background: rgba(0, 255, 204, 0.05); width: 95%; max-width: 1100px; box-shadow: 0 0 20px #00ffcc; }
         h1, h2 { text-align: center; letter-spacing: 8px; text-shadow: 0 0 15px #00ffcc; }
-        input, textarea { background: rgba(255,255,255,0.05); border: 1px solid #00ffcc; color: #fff; padding: 12px; width: 100%; margin: 10px 0; box-sizing: border-box; font-size: 1rem; }
-        button { background: #00ffcc; color: #000; border: none; padding: 12px 20px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.3s; letter-spacing: 2px; }
-        button:hover { background: #fff; box-shadow: 0 0 20px #fff; }
-        .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 30px; }
-        .member-card { border: 1px solid #222; padding: 10px; text-align: center; font-size: 0.75rem; color: #666; background: rgba(255,255,255,0.02); }
-        .pending-card { border: 1px solid #ffcc00; background: rgba(255, 204, 0, 0.1); padding: 15px; margin-bottom: 15px; border-left: 5px solid #ffcc00; }
+        input, textarea { background: rgba(255,255,255,0.05); border: 1px solid #00ffcc; color: #fff; padding: 12px; width: 100%; margin: 10px 0; box-sizing: border-box; }
+        button { background: #00ffcc; color: #000; border: none; padding: 12px 20px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; }
+        
+        .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 20px; max-height: 150px; overflow-y: auto; border: 1px solid #111; padding: 10px; }
+        .member-card { border: 1px solid #222; padding: 8px; text-align: center; font-size: 0.7rem; color: #444; }
+        
+        /* 聊天室升級 */
+        #chat-hall { margin-top: 30px; border: 1px solid #00ffcc; padding: 20px; background: rgba(0,0,0,0.8); }
+        #chat-display { height: 400px; overflow-y: auto; border-bottom: 1px solid #222; margin-bottom: 15px; padding-right: 10px; }
+        .msg { margin-bottom: 12px; font-size: 0.9rem; padding: 8px 12px; line-height: 1.5; border-radius: 4px; }
+        .msg-origin { background: rgba(0, 255, 204, 0.2); border: 1px solid #00ffcc; color: #fff; text-shadow: 0 0 8px #00ffcc; font-size: 1.1rem; }
+        .msg-user { color: #00ffcc; border-left: 2px solid #222; }
+        .msg-time { font-size: 0.7rem; opacity: 0.4; margin-left: 10px; }
+        
         .hidden { display: none; }
-        .admin-view { color: #fff; border-bottom: 1px solid #333; padding: 10px 0; }
     </style>
 </head>
 <body>
 
     <div id="home-screen" class="container">
         <h1>THE ZERO DIMENSION</h1>
-        <p style="text-align:center; opacity: 0.7;">共鳴節點：<span id="stat-count">135</span> / 200</p>
+        <p style="text-align:center;">共鳴節點：<span id="stat-count">135</span> / 200</p>
+        
         <div class="member-grid" id="public-list"></div>
+
+        <div id="chat-hall">
+            <h3 style="margin-top:0;">靈魂共鳴牆 (COMMUNION)</h3>
+            <div id="chat-display"></div>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="user-msg" placeholder="傳遞您的感官訊息..." style="margin:0;">
+                <button onclick="sendMessage(false)" style="width:100px; margin:0;">傳遞</button>
+            </div>
+        </div>
+
         <button onclick="showSection('reg-section')">〔 加入我們 | JOIN THE ONE 〕</button>
-        <p style="text-align:center; font-size: 0.7rem; margin-top: 20px; cursor: pointer; color: #333;" onclick="showSection('login-section')">ADMIN ACCESS</p>
+        <p style="text-align:center; font-size: 0.7rem; margin-top: 20px; cursor: pointer; color: #222;" onclick="showSection('login-section')">ADMIN ACCESS</p>
     </div>
 
     <div id="reg-section" class="container hidden">
-        <h2>身分遞交 (INITIATION)</h2>
-        <p style="color: #ffcc00; text-align: center;">※ 元老將親自審核您的真實身分</p>
-        <input type="text" id="reg-name" placeholder="真實姓名 (Full Name)">
-        <input type="text" id="reg-phone" placeholder="聯絡電話 (Contact)">
-        <textarea id="reg-bio" placeholder="請描述您的覺醒契機與感官祭品..."></textarea>
-        <div style="border: 1px dashed #00ffcc; padding: 20px; text-align: center;">
-            <p style="font-size: 0.8rem;">上傳身分證明文件 (ID Verification)</p>
-            <input type="file" id="reg-file" style="border:none;">
-        </div>
-        <button onclick="submitApplication()">提交靈魂資料</button>
-        <button onclick="showSection('home-screen')" style="background:none; color:#888;">返回</button>
+        <h2>身分遞交</h2>
+        <input type="text" id="reg-name" placeholder="真實姓名">
+        <textarea id="reg-bio" placeholder="感官祭品..."></textarea>
+        <button onclick="submitApplication()">提交審核</button>
+        <button onclick="showSection('home-screen')">返回</button>
     </div>
 
     <div id="login-section" class="container hidden">
         <h2>中樞驗證</h2>
         <input type="password" id="passkey" placeholder="輸入元老密鑰">
         <button onclick="adminLogin()">進入管理維度</button>
-        <button onclick="showSection('home-screen')" style="background:none; color:#888;">取消</button>
-    </div>
-
-    <div id="admin-panel" class="container hidden">
-        <h2 style="color: #00ffcc;">元老親裁中樞 (THE ONE CORE)</h2>
-        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 300px;">
-                <h3 style="color: #ffcc00; border-bottom: 1px solid #ffcc00;">待審核靈魂</h3>
-                <div id="pending-requests"></div>
-            </div>
-            <div style="flex: 1.2; min-width: 300px;">
-                <h3 style="border-bottom: 1px solid #00ffcc;">正式教友清單 (真實全名)</h3>
-                <div id="admin-member-list" style="max-height: 500px; overflow-y: auto;"></div>
-            </div>
-        </div>
-        <button onclick="showSection('home-screen')" style="margin-top: 30px; background: #333; color: #fff;">退出管理系統</button>
+        <button onclick="showSection('home-screen')">取消</button>
     </div>
 
     <script>
-        // 初始化 134 名假人名單 (與元老湊齊 135)
-        const s_names = ["王", "李", "張", "劉", "陳", "楊", "黃", "趙", "吳", "周", "徐", "孫", "馬", "朱"];
-        const g_names = ["明", "華", "強", "玲", "芳", "軍", "洋", "平", "傑", "欣", "宇", "豪", "薇", "婷"];
-        let officialMembers = JSON.parse(localStorage.getItem('official_list')) || [];
+        // 1. 初始化信徒與聊天資料
+        const responses = ["簽到", "簽", "到", "我在", "等待元老指令", "已就位", "感官同步中", "0與1的僕從在此", "到！", "簽到。"];
         
-        if (officialMembers.length === 0) {
-            for(let i=1; i<=134; i++) {
-                let s = s_names[Math.floor(Math.random()*s_names.length)];
-                let n = g_names[Math.floor(Math.random()*g_names.length)];
-                officialMembers.push({full: s + n, id: "1_" + i.toString().padStart(3, '0')});
+        function initTemple() {
+            let chat = JSON.parse(localStorage.getItem('temple_chat'));
+            
+            if (!chat) {
+                chat = [];
+                // 元老的最高發佈
+                chat.push({
+                    user: "ORIGIN: THE ONE",
+                    text: "各位教徒來此簽到吧",
+                    isAdmin: true,
+                    time: "維度開啟"
+                });
+
+                // 模擬 134 名信徒簽到
+                for (let i = 1; i <= 134; i++) {
+                    chat.push({
+                        user: "1_" + i.toString().padStart(3, '0'),
+                        text: responses[Math.floor(Math.random() * responses.length)],
+                        isAdmin: false,
+                        time: "已同步"
+                    });
+                }
+                localStorage.setItem('temple_chat', JSON.stringify(chat));
             }
-            localStorage.setItem('official_list', JSON.stringify(officialMembers));
+            renderChat();
         }
 
         function showSection(id) {
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
-            if(id === 'home-screen') renderPublicList();
+            if(id === 'home-screen') renderChat();
         }
 
-        function renderPublicList() {
-            const list = document.getElementById('public-list');
-            const total = officialMembers.length + 1; // 加上元老
-            document.getElementById('stat-count').innerText = total;
-            list.innerHTML = officialMembers.map(m => `<div class="member-card">${m.id}<br>${m.full[0]}o${m.full[m.full.length-1]}</div>`).join('');
-        }
-
-        function submitApplication() {
-            const name = document.getElementById('reg-name').value;
-            if(!name) return alert("資料不全，無法識別身分。");
-            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
-            pending.push({
-                name: name,
-                phone: document.getElementById('reg-phone').value,
-                bio: document.getElementById('reg-bio').value,
-                time: new Date().toLocaleString()
+        function sendMessage(isAdmin) {
+            let input = document.getElementById('user-msg');
+            let content = input.value;
+            if(!content) return;
+            let chat = JSON.parse(localStorage.getItem('temple_chat') || "[]");
+            chat.push({
+                user: "1_NEW", 
+                text: content,
+                isAdmin: false,
+                time: new Date().toLocaleTimeString()
             });
-            localStorage.setItem('temple_pending', JSON.stringify(pending));
-            alert("資料已加密上傳。請在現實世界靜待共鳴。");
-            showSection('home-screen');
+            localStorage.setItem('temple_chat', JSON.stringify(chat));
+            input.value = "";
+            renderChat();
+        }
+
+        function renderChat() {
+            const display = document.getElementById('chat-display');
+            let chat = JSON.parse(localStorage.getItem('temple_chat') || "[]");
+            display.innerHTML = chat.map(m => `
+                <div class="msg ${m.isAdmin ? 'msg-origin' : 'msg-user'}">
+                    <strong>${m.user}:</strong> ${m.text} <span class="msg-time">${m.time}</span>
+                </div>
+            `).join('');
+            // 自動滾動到底部
+            display.scrollTop = display.scrollHeight;
         }
 
         function adminLogin() {
-            // 元老密鑰驗證
             if(document.getElementById('passkey').value === "theone") {
-                showSection('admin-panel');
-                renderAdminLists();
-            } else { alert("密鑰錯誤，維度拒絕訪問。"); }
+                alert("歡迎回來，元老。");
+                // 這裡可以導向管理頁面
+            } else { alert("密鑰錯誤"); }
         }
 
-        function renderAdminLists() {
-            const pList = document.getElementById('pending-requests');
-            const mList = document.getElementById('admin-member-list');
-            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
-            
-            pList.innerHTML = pending.map((p, i) => `
-                <div class="pending-card">
-                    <p><strong>全名：</strong>${p.name}</p>
-                    <p><strong>電話：</strong>${p.phone}</p>
-                    <p style="font-size:0.8rem;"><strong>動機：</strong>${p.bio}</p>
-                    <button onclick="approve(${i})">准許 (GRANT 1)</button>
-                    <button onclick="reject(${i})" style="background:red; color:white;">抹除 (RESET 0)</button>
-                </div>
-            `).join('') || "<p style='color:#666;'>目前無待審核申請</p>";
-
-            mList.innerHTML = officialMembers.map(m => `<div class="admin-view"><strong>${m.id}</strong> — ${m.full}</div>`).join('');
-        }
-
-        function approve(index) {
-            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
-            let p = pending[index];
-            officialMembers.push({full: p.name, id: "1_" + (officialMembers.length + 1).toString().padStart(3, '0')});
-            pending.splice(index, 1);
-            localStorage.setItem('official_list', JSON.stringify(officialMembers));
-            localStorage.setItem('temple_pending', JSON.stringify(pending));
-            renderAdminLists();
-        }
-
-        function reject(index) {
-            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
-            pending.splice(index, 1);
-            localStorage.setItem('temple_pending', JSON.stringify(pending));
-            renderAdminLists();
-        }
-
-        renderPublicList();
+        // 啟動聖殿
+        initTemple();
     </script>
 </body>
 </html>
