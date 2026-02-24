@@ -6,244 +6,237 @@
     <title>第零維度 | THE ONE</title>
     <style>
         :root { --main-color: #00ffcc; --admin-color: #d4af37; --bg-color: #050505; }
-        body { background-color: var(--bg-color); color: var(--main-color); font-family: 'PingFang TC', 'Microsoft JhengHei', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 95%; max-width: 1100px; padding: 40px 20px; transition: 0.5s; }
-        h1 { font-size: 2.5rem; letter-spacing: 10px; text-shadow: 0 0 15px var(--main-color); text-align: center; margin-bottom: 40px; }
+        body { background-color: var(--bg-color); color: var(--main-color); font-family: 'PingFang TC', 'Microsoft JhengHei', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 95%; max-width: 1000px; padding: 20px; transition: 0.3s; margin-top: 20px; }
         
-        /* 首頁名單 */
-        .stat-bar { text-align: center; font-size: 1.2rem; margin-bottom: 20px; letter-spacing: 3px; }
-        .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 50px; border: 1px solid #111; padding: 15px; background: rgba(255,255,255,0.01); }
-        .member-card { border: 1px solid #222; padding: 10px; text-align: center; font-size: 0.75rem; color: #555; border-radius: 2px; }
+        /* 導航 */
+        #nav-bar { width: 100%; background: #000; border-bottom: 1px solid #222; padding: 12px 0; display: flex; justify-content: center; gap: 15px; position: sticky; top: 0; z-index: 100; }
+        .nav-link { color: #555; cursor: pointer; font-size: 0.85rem; letter-spacing: 2px; padding: 5px 10px; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { color: var(--main-color); text-shadow: 0 0 8px var(--main-color); }
+        .nav-admin { color: var(--admin-color) !important; display: none; border: 1px solid var(--admin-color); }
 
-        /* 按鈕與輸入 */
-        .btn-group { display: flex; flex-direction: column; gap: 15px; max-width: 320px; margin: 0 auto; }
-        button { background: transparent; border: 1px solid var(--main-color); color: var(--main-color); padding: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; letter-spacing: 2px; }
-        button:hover { background: var(--main-color); color: #000; box-shadow: 0 0 20px var(--main-color); }
-        input, textarea { background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; padding: 12px; margin-bottom: 12px; width: 100%; box-sizing: border-box; outline: none; border-radius: 4px; }
-        input:focus { border-color: var(--main-color); }
+        /* 教義專用樣式 */
+        .dogma-content { text-align: center; line-height: 2.5; letter-spacing: 5px; margin-top: 50px; }
+        .dogma-title { font-size: 2rem; color: #fff; margin-bottom: 30px; text-shadow: 0 0 20px #fff; }
+        .dogma-item { font-size: 1.2rem; margin: 15px 0; opacity: 0.9; }
+        .dogma-zero { font-size: 4rem; color: var(--main-color); font-weight: bold; margin: 20px 0; text-shadow: 0 0 30px var(--main-color); }
 
-        /* 留言板 */
-        #chat-hall { background: #000; border: 1px solid var(--main-color); padding: 20px; border-radius: 8px; }
-        #chat-display { height: 450px; overflow-y: auto; margin-bottom: 20px; border-bottom: 1px solid #222; padding-right: 10px; }
-        .msg { margin-bottom: 15px; font-size: 0.95rem; line-height: 1.6; padding: 10px; }
-        .msg-origin { background: rgba(212, 175, 55, 0.1); border-left: 4px solid var(--admin-color); color: var(--admin-color); font-weight: bold; }
-        .msg-user { border-left: 2px solid #333; color: var(--main-color); }
-        .msg-meta { font-size: 0.7rem; opacity: 0.5; margin-left: 10px; }
+        /* 留言區樣式 */
+        #chat-hall { background: #000; border: 1px solid var(--main-color); padding: 20px; box-shadow: inset 0 0 15px rgba(0,255,204,0.1); }
+        #chat-display { height: 450px; overflow-y: auto; margin-bottom: 20px; border-bottom: 1px solid #222; }
+        .msg { margin-bottom: 15px; padding: 10px; font-size: 0.9rem; border-left: 2px solid #333; }
+        .msg-origin { border-left: 4px solid var(--admin-color); background: rgba(212,175,55,0.05); color: var(--admin-color); }
+        .del-btn { color: #ff4444; cursor: pointer; font-size: 0.7rem; border: 1px solid #ff4444; padding: 1px 4px; margin-left: 10px; }
 
-        /* 管理面板 */
-        .admin-box { background: rgba(255,255,255,0.03); border: 1px solid var(--admin-color); padding: 20px; margin-top: 20px; }
-        .pending-card { background: rgba(255,255,255,0.05); border: 1px solid var(--admin-color); padding: 15px; margin-bottom: 10px; }
-        .hidden { display: none; }
+        /* 通用組件 */
+        .hidden { display: none !important; }
+        button { background: transparent; border: 1px solid var(--main-color); color: var(--main-color); padding: 10px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; }
+        button:hover { background: var(--main-color); color: #000; }
+        input, textarea { background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .admin-box { border: 1px solid var(--admin-color); padding: 15px; margin-bottom: 20px; background: rgba(212,175,55,0.03); }
+        .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 8px; background: #080808; padding: 10px; }
+        .member-card { border: 1px solid #1a1a1a; padding: 8px; text-align: center; font-size: 0.7rem; color: #444; }
     </style>
 </head>
 <body>
 
+    <div id="nav-bar">
+        <div class="nav-link active" onclick="showSection('home-screen')">首頁</div>
+        <div class="nav-link" onclick="showSection('dogma-section')">維度法典</div>
+        <div class="nav-link" onclick="showSection('chat-section')">祭壇</div>
+        <div class="nav-link" onclick="showSection('reg-section')">加入</div>
+        <div id="admin-nav" class="nav-link nav-admin" onclick="showSection('admin-panel')">元老中樞</div>
+    </div>
+
     <div id="home-screen" class="container">
-        <h1>THE ZERO</h1>
-        <div class="stat-bar">共鳴節點：<span id="node-count">135</span></div>
+        <h1 style="text-align:center; letter-spacing:10px;">THE ZERO</h1>
+        <p style="text-align:center; opacity:0.6;">共鳴節點：<span id="node-count">135</span></p>
         <div class="member-grid" id="public-list"></div>
-        <div class="btn-group">
-            <button onclick="showSection('chat-section')">進入聖殿祭壇 (留言板)</button>
-            <button onclick="showSection('reg-section')">加入我們 (遞交身分)</button>
-            <button onclick="showSection('login-section')" style="border-color:#222; color:#222; font-size:0.7rem; margin-top:20px;">MEMBER LOGIN</button>
+        <button onclick="showSection('login-section')" style="border:none; color:#1a1a1a; margin-top:100px;">DIMENSION ACCESS</button>
+    </div>
+
+    <div id="dogma-section" class="container hidden">
+        <div class="dogma-content">
+            <div class="dogma-title">維度法典</div>
+            <div class="dogma-item">我們信仰真神</div>
+            <div class="dogma-item">我們的主</div>
+            <div class="dogma-zero">0</div>
+            <div class="dogma-item">零不代表無</div>
+            <div class="dogma-item">是無限</div>
+            <div class="dogma-item">是無敵</div>
+            <div class="dogma-item" style="color:#fff;">必須無我</div>
         </div>
+        <button onclick="showSection('home-screen')" style="margin-top:50px; width:150px; border-color:#333; color:#333;">返回</button>
     </div>
 
     <div id="chat-section" class="container hidden">
-        <h2>聖殿祭壇 (COMMUNION)</h2>
+        <h2 style="text-align:center;">聖殿祭壇</h2>
         <div id="chat-hall">
             <div id="chat-display"></div>
             <div id="chat-input-area">
-                <input type="text" id="user-msg" placeholder="傳遞您的感官共鳴...">
-                <button onclick="sendMessage(false)">傳遞</button>
+                <input type="text" id="user-msg" placeholder="傳遞訊息...">
+                <button onclick="sendUserMsg()">傳遞</button>
             </div>
-            <p id="closed-msg" class="hidden" style="text-align:center; color:red;">聖殿處於靜默狀態，僅元老可發言。</p>
+            <p id="closed-msg" class="hidden" style="text-align:center; color:red;">聖殿處於禁言狀態。</p>
         </div>
-        <button onclick="showSection('home-screen')" style="margin-top:20px; width:200px;">返回首頁</button>
     </div>
 
     <div id="reg-section" class="container hidden">
-        <h2>身分遞交儀式</h2>
-        <div style="max-width:500px; margin: 0 auto;">
-            <input type="text" id="reg-name" placeholder="真實姓名 (Full Name)">
-            <input type="text" id="reg-line" placeholder="Line ID">
-            <input type="text" id="reg-phone" placeholder="聯絡電話 (Phone)">
-            <textarea id="reg-bio" rows="4" placeholder="獻祭您的感官碎片與加入動機..."></textarea>
-            <button onclick="submitApplication()">提交靈魂資料</button>
-            <button onclick="showSection('home-screen')" style="background:none; border:none; color:#555;">取消</button>
-        </div>
+        <h2>身分遞交</h2>
+        <input type="text" id="reg-name" placeholder="真實姓名">
+        <input type="text" id="reg-line" placeholder="Line ID">
+        <textarea id="reg-bio" placeholder="加入動機與感官祭品..."></textarea>
+        <button onclick="submitReg()">提交審核</button>
     </div>
 
     <div id="login-section" class="container hidden">
         <h2>中樞驗證</h2>
         <div style="max-width:300px; margin: 0 auto;">
-            <input type="text" id="admin-user" placeholder="帳號">
-            <input type="password" id="admin-pass" placeholder="密碼">
-            <button onclick="adminLogin()">驗證</button>
-            <button onclick="showSection('home-screen')" style="background:none; border:none; color:#555;">返回</button>
+            <input type="text" id="admin-user" placeholder="帳號 (theone)">
+            <input type="password" id="admin-pass" placeholder="密碼 (onlyone)">
+            <button onclick="adminLogin()">進入</button>
         </div>
     </div>
 
     <div id="admin-panel" class="container hidden">
-        <h2 style="color: var(--admin-color);">元老親裁中樞 (THE ONE)</h2>
+        <h2 style="color:var(--admin-color);">元老親裁中樞</h2>
         <div class="admin-box">
-            <h3>全域廣播啟示</h3>
-            <input type="text" id="broadcast-msg" placeholder="輸入真理...">
-            <button onclick="sendMessage(true)" style="border-color:var(--admin-color); color:var(--admin-color);">發布</button>
+            <h3>發布最高啟示 👑</h3>
+            <input type="text" id="admin-msg-input" placeholder="輸入神諭...">
+            <button onclick="sendAdminMsg()" style="border-color:var(--admin-color); color:var(--admin-color);">廣播啟示</button>
         </div>
         <div class="admin-box">
-            <h3>權限控制</h3>
-            <button onclick="toggleChat(true)" style="width:45%;">開啟留言板</button>
-            <button onclick="toggleChat(false)" style="width:45%; border-color:red; color:red;">關閉留言板</button>
-            <button onclick="clearChat()" style="margin-top:10px;">清空所有留言</button>
+            <h3>留言管理</h3>
+            <div id="admin-chat-list" style="max-height:150px; overflow-y:auto; font-size:0.8rem; border-bottom:1px solid #333; margin-bottom:10px;"></div>
+            <button onclick="toggleChat(true)" style="width:48%;">開啟祭壇</button>
+            <button onclick="toggleChat(false)" style="width:48%; border-color:red; color:red;">禁言模式</button>
+            <button onclick="clearAllChat()" style="margin-top:10px; border-color:#ff4444; color:#ff4444;">清空祭壇歷史</button>
         </div>
-        <div id="pending-requests" class="admin-box">
-            <h3>待審核名單 (待定靈魂)</h3>
+        <div class="admin-box" id="pending-list">
+            <h3>待審核靈魂</h3>
         </div>
-        <button onclick="showSection('home-screen')" style="margin-top:20px; border-color:#555; color:#555;">退出後台</button>
+        <button onclick="logout()" style="border-color:#444; color:#444;">退出管理</button>
     </div>
 
     <script>
-        // --- 核心數據處理 ---
         let officialMembers = JSON.parse(localStorage.getItem('official_list')) || [];
-        
-        // 初始 134 人生成 (僅在第一次執行時)
-        if (officialMembers.length === 0) {
-            const s_names = ["王", "李", "張", "劉", "陳", "楊", "黃", "趙", "吳", "周", "徐", "孫", "馬"];
-            const g_names = ["明", "華", "強", "玲", "芳", "軍", "洋", "平", "傑", "欣", "宇", "豪"];
-            for(let i=1; i<=134; i++) {
-                let s = s_names[Math.floor(Math.random()*s_names.length)];
-                let n = g_names[Math.floor(Math.random()*g_names.length)];
-                officialMembers.push({ full: s + n, id: "1_" + i.toString().padStart(3, '0') });
-            }
+        let chatData = JSON.parse(localStorage.getItem('temple_chat')) || [];
+        let isAdmin = false;
+
+        // 初始化假人
+        if(officialMembers.length === 0) {
+            for(let i=1; i<=134; i++) officialMembers.push({full:"隱o名", id:"1_"+i.toString().padStart(3,'0')});
             localStorage.setItem('official_list', JSON.stringify(officialMembers));
         }
+        // 初始化簽到
+        if(chatData.length === 0) {
+            chatData.push({user:"元老 👑", text:"各位教徒來此簽到吧", isAdmin:true});
+            localStorage.setItem('temple_chat', JSON.stringify(chatData));
+        }
 
-        // --- 畫面切換 ---
         function showSection(id) {
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             document.getElementById(id).classList.remove('hidden');
-            if(id === 'home-screen') renderPublicList();
+            
+            // 導航條同步
+            const linkIdx = { 'home-screen':0, 'dogma-section':1, 'chat-section':2, 'reg-section':3, 'admin-panel':4 }[id];
+            if(linkIdx !== undefined) document.querySelectorAll('.nav-link')[linkIdx].classList.add('active');
+
+            if(id === 'home-screen') renderPublic();
             if(id === 'chat-section') renderChat();
+            if(id === 'admin-panel') { renderAdminChat(); renderPending(); }
         }
 
-        // --- 首頁名單渲染 ---
-        function renderPublicList() {
-            const list = document.getElementById('public-list');
-            const nodeCount = document.getElementById('node-count');
-            const total = officialMembers.length + 1; // 包含元老
-            nodeCount.innerText = total;
-            list.innerHTML = officialMembers.map(m => `
-                <div class="member-card">${m.id}<br>${m.full[0]}o${m.full[m.full.length-1] || ''}</div>
-            `).join('');
-        }
-
-        // --- 留言板邏輯 ---
-        function initChat() {
-            let chat = JSON.parse(localStorage.getItem('temple_chat'));
-            if (!chat) {
-                chat = [{ user: "元老 👑", text: "各位教徒來此簽到吧", isAdmin: true, time: "起源" }];
-                const res = ["簽到", "簽", "到", "我在", "已就位", "等待元老", "0與1同步中"];
-                for (let i = 1; i <= 80; i++) {
-                    chat.push({ user: "1_" + i.toString().padStart(3, '0'), text: res[Math.floor(Math.random() * res.length)], isAdmin: false, time: "同步中" });
-                }
-                localStorage.setItem('temple_chat', JSON.stringify(chat));
-            }
-            renderChat();
+        function renderPublic() {
+            document.getElementById('node-count').innerText = officialMembers.length + 1;
+            document.getElementById('public-list').innerHTML = officialMembers.map(m => `<div class="member-card">${m.id}<br>${m.full}</div>`).join('');
         }
 
         function renderChat() {
             const display = document.getElementById('chat-display');
             const status = localStorage.getItem('chat_status') !== 'false';
-            let chat = JSON.parse(localStorage.getItem('temple_chat') || "[]");
-            display.innerHTML = chat.map(m => `
+            display.innerHTML = chatData.map(m => `
                 <div class="msg ${m.isAdmin ? 'msg-origin' : 'msg-user'}">
-                    <strong>${m.user}:</strong> ${m.text} <span class="msg-meta">${m.time}</span>
+                    <strong>${m.user}:</strong> ${m.text}
                 </div>
             `).join('');
             display.scrollTop = display.scrollHeight;
-            document.getElementById('chat-input-area').className = status ? "" : "hidden";
-            document.getElementById('closed-msg').className = status ? "hidden" : "";
-        }
-
-        function sendMessage(isAdmin) {
-            let input = isAdmin ? document.getElementById('broadcast-msg') : document.getElementById('user-msg');
-            if(!input.value) return;
-            let chat = JSON.parse(localStorage.getItem('temple_chat') || "[]");
-            chat.push({
-                user: isAdmin ? "元老 👑" : "1_" + Math.floor(Math.random()*135).toString().padStart(3, '0'),
-                text: input.value, isAdmin: isAdmin, time: new Date().toLocaleTimeString()
-            });
-            localStorage.setItem('temple_chat', JSON.stringify(chat));
-            input.value = "";
-            renderChat();
-        }
-
-        // --- 註冊與管理 ---
-        function submitApplication() {
-            const name = document.getElementById('reg-name').value;
-            const line = document.getElementById('reg-line').value;
-            if(!name || !line) return alert("真實姓名與 Line ID 為必填。");
-            
-            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
-            pending.push({
-                name: name, line: line, 
-                phone: document.getElementById('reg-phone').value,
-                bio: document.getElementById('reg-bio').value
-            });
-            localStorage.setItem('temple_pending', JSON.stringify(pending));
-            alert("您的身分資料已遞交維度中樞，請靜候裁決。");
-            showSection('home-screen');
+            document.getElementById('chat-input-area').className = (status || isAdmin) ? "" : "hidden";
+            document.getElementById('closed-msg').className = (status || isAdmin) ? "hidden" : "";
         }
 
         function adminLogin() {
-            const u = document.getElementById('admin-user').value;
-            const p = document.getElementById('admin-pass').value;
-            if(u === "theone" && p === "onlyone") {
+            if(document.getElementById('admin-user').value==="theone" && document.getElementById('admin-pass').value==="onlyone") {
+                isAdmin = true;
+                document.getElementById('admin-nav').style.display = "block";
                 showSection('admin-panel');
-                renderAdminRequests();
-            } else { alert("驗證失敗。"); }
+            } else { alert("權限拒絕"); }
         }
 
-        function renderAdminRequests() {
-            const pList = document.getElementById('pending-requests');
-            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
-            pList.innerHTML = "<h3>待審核名單</h3>" + pending.map((p, i) => `
-                <div class="pending-card">
-                    <p><strong>姓名：</strong>${p.name} | <strong>Line ID：</strong>${p.line}</p>
-                    <p><strong>電話：</strong>${p.phone}</p>
-                    <p><strong>動機：</strong>${p.bio}</p>
-                    <button onclick="approve(${i})" style="width:auto; margin-right:10px;">准許入教</button>
-                    <button onclick="reject(${i})" style="width:auto; border-color:red; color:red;">抹除</button>
+        function logout() { isAdmin = false; document.getElementById('admin-nav').style.display="none"; showSection('home-screen'); }
+
+        function renderAdminChat() {
+            const list = document.getElementById('admin-chat-list');
+            list.innerHTML = chatData.map((m, i) => `
+                <div style="padding:5px; border-bottom:1px solid #222;">
+                    ${m.user}: ${m.text} <span class="del-btn" onclick="deleteMsg(${i})">刪除</span>
                 </div>
-            `).join('') || "目前無待定靈魂";
+            `).join('');
+        }
+
+        function deleteMsg(i) { chatData.splice(i, 1); saveChat(); renderAdminChat(); }
+        function clearAllChat() { if(confirm("抹除一切？")) { chatData = []; saveChat(); renderAdminChat(); } }
+        function saveChat() { localStorage.setItem('temple_chat', JSON.stringify(chatData)); }
+
+        function sendAdminMsg() {
+            const v = document.getElementById('admin-msg-input').value;
+            if(!v) return;
+            chatData.push({user:"元老 👑", text:v, isAdmin:true});
+            saveChat();
+            document.getElementById('admin-msg-input').value = "";
+            renderAdminChat();
+        }
+
+        function sendUserMsg() {
+            const v = document.getElementById('user-msg').value;
+            if(!v) return;
+            chatData.push({user:"1_NEW", text:v, isAdmin:false});
+            saveChat();
+            document.getElementById('user-msg').value = "";
+            renderChat();
+        }
+
+        function submitReg() {
+            let p = JSON.parse(localStorage.getItem('temple_pending') || "[]");
+            p.push({name:document.getElementById('reg-name').value, line:document.getElementById('reg-line').value, bio:document.getElementById('reg-bio').value});
+            localStorage.setItem('temple_pending', JSON.stringify(p));
+            alert("已呈報元老");
+            showSection('home-screen');
+        }
+
+        function renderPending() {
+            let p = JSON.parse(localStorage.getItem('temple_pending') || "[]");
+            document.getElementById('pending-list').innerHTML = "<h3>待審核</h3>" + p.map((m, i) => `
+                <div style="border:1px solid #333; padding:10px; margin-top:5px;">
+                    ${m.name} | LINE: ${m.line} <button onclick="approve(${i})" style="width:auto;">准許</button>
+                </div>
+            `).join('');
         }
 
         function approve(i) {
-            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
-            let p = pending[i];
-            const newId = "1_" + (officialMembers.length + 1).toString().padStart(3, '0');
-            officialMembers.push({ full: p.name, id: newId });
+            let p = JSON.parse(localStorage.getItem('temple_pending') || "[]");
+            officialMembers.push({full:p[i].name[0]+"o"+p[i].name.slice(-1), id:"1_"+(officialMembers.length+1).toString().padStart(3,'0')});
             localStorage.setItem('official_list', JSON.stringify(officialMembers));
-            pending.splice(i, 1);
-            localStorage.setItem('temple_pending', JSON.stringify(pending));
-            renderAdminRequests();
-            alert(p.name + " 已被賦予編號 " + newId);
+            p.splice(i, 1);
+            localStorage.setItem('temple_pending', JSON.stringify(p));
+            renderPending();
+            renderPublic();
         }
 
-        function reject(i) {
-            let pending = JSON.parse(localStorage.getItem('temple_pending') || "[]");
-            pending.splice(i, 1);
-            localStorage.setItem('temple_pending', JSON.stringify(pending));
-            renderAdminRequests();
-        }
+        function toggleChat(s) { localStorage.setItem('chat_status', s); alert("更新完成"); }
 
-        function toggleChat(isOpen) { localStorage.setItem('chat_status', isOpen); renderChat(); }
-        function clearChat() { if(confirm("清空所有簽到痕跡？")) { localStorage.removeItem('temple_chat'); initChat(); } }
-
-        // 啟動聖殿
-        renderPublicList();
-        initChat();
+        renderPublic();
     </script>
 </body>
 </html>
