@@ -1,4 +1,68 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>金合舅 JoJoPAY | 快速申請</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --accent: #6366f1; --bg: #0b0c12; --card: #1a1b26; --text: #ffffff; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        .step-bar { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .step { width: 35px; height: 35px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #888; }
+        .step.active { background: #4ade80; color: #000; font-weight: bold; }
+        .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid #2a2b36; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        h2 { font-size: 22px; margin: 0 0 10px 0; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 14px; color: #a0a0a0; margin-bottom: 8px; }
+        input, select { width: 100%; padding: 14px; background: #242533; border: 1px solid #333; border-radius: 12px; color: #fff; box-sizing: border-box; outline: none; }
+        .btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 12px; color: #fff; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="step-bar">
+            <div class="step active">1</div><div class="step">2</div><div class="step">3</div><div class="step">4</div><div class="step">5</div>
+        </div>
+        <div class="card">
+            <h2>基本資料填寫</h2>
+            <p style="color:#666; font-size: 13px; margin-bottom: 25px;">完成首步填寫，即可建立您的帳號</p>
+            <div class="form-group"><label>真實姓名</label><input type="text" id="name" placeholder="請輸入姓名"></div>
+            <div class="form-group"><label>手機號碼 (密碼)</label><input type="tel" id="phone" placeholder="0912345678"></div>
+            <div class="form-group"><label>身分證字號 (帳號)</label><input type="text" id="idCard" placeholder="E123456789"></div>
+            <button class="btn" onclick="submitApply()">送出申請並建立帳號</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH", 
+            databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function submitApply() {
+            const phone = document.getElementById('phone').value;
+            const data = {
+                name: document.getElementById('name').value,
+                phone: phone,
+                idCard: document.getElementById('idCard').value,
+                status: '待審核',
+                submitTime: new Date().toLocaleString()
+            };
+            if(!phone || !data.name) return alert("請完整填寫");
+            db.ref('users/' + phone).set(data).then(() => {
+                alert("申請成功！請靜候專員審核通知。");
+            });
+        }
+    </script>
+</body>
+</html>
+
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
