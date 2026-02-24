@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>金合舅 JOJOPAY | 專業貸款平台</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --primary: #d4af37; --secondary: #1a1a1a; --text: #ffffff; --error: #ff4d4d; }
@@ -22,6 +21,7 @@
         .file-label { display: block; margin: 15px 0 5px; color: var(--primary); font-weight: bold; }
         .nav-bar { display: flex; justify-content: space-around; background: #222; padding: 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #333; }
         .nav-item { cursor: pointer; color: var(--primary); font-weight: bold; }
+        hr { border: 0.5px solid #333; margin: 20px 0; }
     </style>
 </head>
 <body>
@@ -47,18 +47,13 @@
 
 <div id="register-page" class="container hidden">
     <h2>新會員註冊</h2>
-    <div id="reg-step-1">
-        <input type="text" id="reg-phone" placeholder="手機號碼">
-        <div id="recaptcha-container"></div>
-        <button onclick="sendOTP()">發送簡訊驗證碼</button>
-    </div>
-    <div id="reg-step-2" class="hidden">
-        <input type="text" id="otp-code" placeholder="6 位數驗證碼">
-        <input type="password" id="reg-pw" placeholder="設定密碼">
-        <input type="text" id="reg-id" placeholder="身分證字號">
-        <input type="date" id="reg-birthday" title="出生年月日">
-        <button onclick="verifyOTPAndRegister()">完成註冊</button>
-    </div>
+    <p style="color:#888; font-size: 0.8rem;">測試期間免手機驗證</p>
+    <input type="text" id="reg-phone" placeholder="手機號碼">
+    <input type="password" id="reg-pw" placeholder="設定登入密碼">
+    <input type="text" id="reg-id" placeholder="身分證字號">
+    <div class="file-label">出生年月日</div>
+    <input type="date" id="reg-birthday">
+    <button onclick="handleRegister()">立即完成註冊</button>
     <button class="btn-outline" onclick="toggleAuth('login')">返回登入</button>
 </div>
 
@@ -71,7 +66,7 @@
     <button onclick="handleVerifyForgot()">提交驗證</button>
     
     <div id="reset-area" class="hidden">
-        <hr style="border:0.5px solid #333; margin:20px 0;">
+        <hr>
         <input type="password" id="new-pw" placeholder="輸入新密碼">
         <button onclick="handleResetPassword()">確認重設</button>
     </div>
@@ -82,55 +77,73 @@
     <h2>實名認證 (KYC)</h2>
     <div id="kyc-form">
         <input type="text" id="kyc-name" placeholder="真實姓名">
+        <input type="text" id="kyc-line" placeholder="Line ID">
+        <hr>
         <input type="text" id="kyc-job" placeholder="工作單位">
-        <input type="file" id="img-job-proof" accept="image/*">
+        <div class="file-label">上傳工作證明/工作證</div>
+        <input type="file" id="img-job" accept="image/*">
+        <hr>
         <input type="text" id="kyc-school" placeholder="就讀學校">
-        <input type="file" id="img-school-proof" accept="image/*">
-        <button onclick="submitKYC()">提交審核</button>
+        <div class="file-label">上傳學生證</div>
+        <input type="file" id="img-school" accept="image/*">
+        <button onclick="submitKYC()">提交審核資料</button>
+    </div>
+    <div id="kyc-status" class="hidden" style="text-align:center;">
+        <h3 style="color:var(--primary)">⏳ 資料審核中</h3>
+        <p>資料已安全提交，專員核對中。</p>
     </div>
 </div>
 
 <script>
+    // --- Firebase 配置 ---
     const firebaseConfig = {
-      apiKey: "您的API_KEY",
+      apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH",
       authDomain: "theone-zero.firebaseapp.com",
       projectId: "theone-zero",
       databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const auth = firebase.auth();
-    let confirmationResult = null;
     let currentUser = null;
 
-    // --- 核心切換函數：修復了這裡！ ---
+    // --- 切換邏輯 ---
     function toggleAuth(pageName) {
-        // 先隱藏所有主要的 Auth 區塊
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('register-page').classList.add('hidden');
         document.getElementById('forgot-page').classList.add('hidden');
-        
-        // 顯示被點擊的那一個
         document.getElementById(pageName + '-page').classList.remove('hidden');
-        
-        // 如果是註冊頁，初始化機器人驗證
-        if(pageName === 'register' && !window.recaptchaVerifier) {
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
-        }
     }
 
-    // --- 頁面顯示邏輯 ---
-    function showPage(id) {
-        document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
+    // --- 註冊 (直接寫入資料庫) ---
+    function handleRegister() {
+        const phone = document.getElementById('reg-phone').value;
+        const pw = document.getElementById('reg-pw').value;
+        const id = document.getElementById('reg-id').value;
+        const bday = document.getElementById('reg-birthday').value;
+
+        if(!phone || !pw || !id || !bday) return alert("請完整填寫註冊資料");
+
+        db.ref('users/' + phone).once('value', snap => {
+            if(snap.exists()) {
+                alert("此手機號碼已存在");
+            } else {
+                db.ref('users/' + phone).set({
+                    phone: phone, pw: pw, idNum: id, birthday: bday, kycStatus: '未認證'
+                }).then(() => {
+                    alert("註冊成功！請登入");
+                    toggleAuth('login');
+                });
+            }
+        });
     }
 
-    // --- 登入邏輯 ---
+    // --- 登入 ---
     function handleLogin() {
         const phone = document.getElementById('login-phone').value;
         const pw = document.getElementById('login-pw').value;
         db.ref('users/' + phone).once('value', snap => {
-            if(snap.exists() && snap.val().pw === pw) {
+            const u = snap.val();
+            if(u && u.pw === pw) {
                 currentUser = phone;
                 document.getElementById('login-page').classList.add('hidden');
                 document.getElementById('nav').classList.remove('hidden');
@@ -139,7 +152,7 @@
         });
     }
 
-    // 忘記密碼驗證邏輯
+    // --- 忘記密碼 ---
     function handleVerifyForgot() {
         const phone = document.getElementById('f-phone').value;
         const id = document.getElementById('f-id').value;
@@ -148,11 +161,24 @@
             const u = snap.val();
             if(u && u.idNum === id && u.birthday === bday) {
                 document.getElementById('reset-area').classList.remove('hidden');
-            } else { alert("資料核對失敗"); }
+            } else { alert("核對失敗，資料不正確"); }
         });
     }
 
-    // (其餘發送 OTP、註冊、KYC 函數請保持跟之前版本一樣...)
+    function handleResetPassword() {
+        const phone = document.getElementById('f-phone').value;
+        const newPw = document.getElementById('new-pw').value;
+        db.ref('users/' + phone).update({ pw: newPw }).then(() => {
+            alert("密碼已更新");
+            location.reload();
+        });
+    }
+
+    function showPage(id) {
+        document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+
     function logout() { location.reload(); }
 </script>
 </body>
