@@ -2,97 +2,75 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理後台 | 金合舅</title>
+    <title>金合舅 | 總管理後台</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: #fff; padding: 20px; margin: 0; }
-        .login-box { max-width: 320px; margin: 150px auto; text-align: center; background: #1e293b; padding: 30px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .admin-panel { max-width: 900px; margin: 20px auto; background: #1e293b; padding: 25px; border-radius: 8px; }
-        .card { background: #334155; padding: 20px; margin-bottom: 15px; border-radius: 8px; border-left: 6px solid #f2a900; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 5px; box-sizing: border-box; }
-        button { padding: 12px 25px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; transition: 0.3s; }
-        .btn-approve { background: #10b981; color: white; }
-        .btn-reject { background: #ef4444; color: white; margin-left: 10px; }
-        .hidden { display: none !important; }
-        h2 { color: #f2a900; }
+        body { font-family: sans-serif; background: #1a1a1a; color: #fff; padding: 20px; }
+        .section { background: #222; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d4af37; }
+        .card { background: #333; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { background: #d4af37; border: none; padding: 8px 15px; cursor: pointer; font-weight: bold; }
+        .btn-red { background: #ff4d4d; color: white; margin-left: 10px; }
     </style>
 </head>
 <body>
-
-<div id="login-screen" class="login-box">
-    <h2>🔒 系統登入</h2>
-    <input type="password" id="admin-pass" placeholder="管理員密碼">
-    <button onclick="checkLogin()" style="width:100%; background: #f2a900; color: #000;">驗證並登入</button>
-</div>
-
-<div id="panel-screen" class="admin-panel hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2>📊 貸款案件審核中樞</h2>
-        <button onclick="location.reload()" style="background:#475569; color:white;">刷新資料</button>
-    </div>
-    <hr style="border:0.5px solid #475569; margin: 20px 0;">
-    <div id="data-list">案件加載中...</div>
-</div>
-
-<script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH",
-      authDomain: "theone-zero.firebaseapp.com",
-      projectId: "theone-zero",
-      storageBucket: "theone-zero.firebasestorage.app",
-      messagingSenderId: "1067669012841",
-      appId: "1:1067669012841:web:1694da76f172c6",
-      databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    function checkLogin() {
-        if(document.getElementById('admin-pass').value === '123456') {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('panel-screen').classList.remove('hidden');
-            loadData();
-        } else { alert("密碼錯誤，請重新輸入。"); }
-    }
-
-    function loadData() {
-        db.ref('loans').on('value', snapshot => {
-            let html = "";
-            if(!snapshot.exists()) {
-                document.getElementById('data-list').innerHTML = "<p>目前尚無任何進件申請。</p>";
-                return;
-            }
-            snapshot.forEach(child => {
-                const m = child.val();
-                const k = child.key;
-                html += `
-                <div class="card">
-                    <p style="font-size: 1.1rem;"><strong>申請人：${m.name}</strong> <span style="font-size:0.8rem; color:#94a3b8;">(${m.time})</span></p>
-                    <p>📱 手機號碼：${m.phone}</p>
-                    <p>💬 Line ID：<span style="color:#10b981; font-weight:bold;">${m.line}</span></p>
-                    <p>💰 申請金額：$${m.amount}</p>
-                    <p>📝 借款說明：${m.reason || '無'}</p>
-                    <p>🚩 目前狀態：<span style="color:#f2a900; font-weight:bold;">${m.status}</span></p>
-                    <div style="margin-top:15px;">
-                        <button class="btn-approve" onclick="update('${k}','已撥款')">核准撥款</button>
-                        <button class="btn-reject" onclick="update('${k}','不符資格')">拒絕申請</button>
-                        <button onclick="del('${k}')" style="background:#64748b; color:#fff; margin-left:10px;">刪除紀錄</button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('data-list').innerHTML = html;
-        });
-    }
-
-    function update(key, status) {
-        db.ref('loans/' + key).update({ status: status, time: new Date().toLocaleString() });
-    }
+    <h1>金合舅 JOJOPAY 核心後台</h1>
     
-    function del(key) {
-        if(confirm("確定要永久刪除此客戶的資料嗎？")) db.ref('loans/' + key).remove();
-    }
-</script>
+    <div class="section">
+        <h2>1. KYC 會員認證審核</h2>
+        <div id="kyc-list">加載中...</div>
+    </div>
+
+    <div class="section">
+        <h2>2. 貸款申請審核</h2>
+        <div id="loan-list">加載中...</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH",
+          authDomain: "theone-zero.firebaseapp.com",
+          projectId: "theone-zero",
+          storageBucket: "theone-zero.firebasestorage.app",
+          messagingSenderId: "1067669012841",
+          appId: "1:1067669012841:web:1694da76f172c6",
+          databaseURL: "https://theone-zero-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 審核 KYC
+        db.ref('users').on('value', snap => {
+            let html = "";
+            snap.forEach(child => {
+                const u = child.val();
+                if(u.kyc === '審核中') {
+                    html += `<div class="card">
+                        <b>手機：${child.key}</b><br>姓名：${u.name} | 身分證：${u.idCard} | Line：${u.line}<br>
+                        <button onclick="approveKYC('${child.key}')">准許認證</button>
+                    </div>`;
+                }
+            });
+            document.getElementById('kyc-list').innerHTML = html || "暫無待審核會員";
+        });
+
+        // 審核貸款
+        db.ref('loan_apps').on('value', snap => {
+            let html = "";
+            snap.forEach(child => {
+                const l = child.val();
+                if(l.status === '待審核') {
+                    html += `<div class="card">
+                        <b>用戶：${l.user}</b> | 金額：$${l.amount}<br>用途：${l.reason}<br>
+                        <button onclick="approveLoan('${child.key}')">核准貸款</button>
+                    </div>`;
+                }
+            });
+            document.getElementById('loan-list').innerHTML = html || "暫無貸款申請";
+        });
+
+        function approveKYC(id) { db.ref('users/' + id).update({ kyc: '已認證' }); }
+        function approveLoan(id) { db.ref('loan_apps/' + id).update({ status: '已撥款' }); }
+    </script>
 </body>
 </html>
