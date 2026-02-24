@@ -7,95 +7,110 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primary: #d4af37; --secondary: #1a1a1a; --text: #ffffff; --error: #ff4d4d; }
-        body { font-family: 'PingFang TC', sans-serif; background: #000; color: var(--text); margin: 0; padding-bottom: 50px; }
-        header { background: var(--secondary); padding: 25px; text-align: center; border-bottom: 3px solid var(--primary); }
-        .logo { font-size: 2.2rem; font-weight: bold; color: var(--primary); letter-spacing: 3px; }
-        .container { max-width: 500px; margin: 20px auto; background: #111; padding: 25px; border-radius: 12px; border: 1px solid #333; }
-        h2 { border-left: 4px solid var(--primary); padding-left: 10px; font-size: 1.3rem; margin-bottom: 20px; }
-        input, button, select { width: 100%; padding: 15px; margin: 10px 0; border-radius: 6px; box-sizing: border-box; }
+        :root { --primary: #d4af37; --secondary: #1a1a1a; --text: #ffffff; --success: #2ecc71; }
+        body { font-family: 'PingFang TC', sans-serif; background: #000; color: var(--text); margin: 0; padding-bottom: 60px; }
+        header { background: var(--secondary); padding: 20px; text-align: center; border-bottom: 2px solid var(--primary); }
+        .container { max-width: 450px; margin: 15px auto; background: #111; padding: 20px; border-radius: 15px; border: 1px solid #333; }
+        
+        /* 進度條設計 */
+        .steps-bar { display: flex; justify-content: space-between; margin-bottom: 30px; position: relative; }
+        .step { width: 35px; height: 35px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 2; position: relative; font-size: 0.9rem; }
+        .step.active { background: var(--primary); color: #000; }
+        .step.done { background: var(--success); color: #fff; }
+        .steps-bar::after { content: ''; position: absolute; top: 17px; left: 0; right: 0; height: 2px; background: #333; z-index: 1; }
+
+        input, button, select { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
         input { background: #222; border: 1px solid #444; color: #fff; }
-        button { background: var(--primary); color: #000; border: none; font-weight: bold; cursor: pointer; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); margin-top: 5px; }
-        .hidden { display: none !important; }
-        .file-label { display: block; margin: 15px 0 5px; color: var(--primary); font-weight: bold; }
-        .nav-bar { display: flex; justify-content: space-around; background: #222; padding: 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #333; }
-        .nav-item { cursor: pointer; color: var(--primary); font-weight: bold; }
-        hr { border: 0.5px solid #333; margin: 20px 0; }
+        button { background: var(--primary); color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-gray { background: #444; color: #fff; }
+        .hidden { display: none; }
+        .file-box { border: 2px dashed #444; padding: 15px; text-align: center; border-radius: 8px; margin: 10px 0; background: #1a1a1a; }
+        .label-gold { color: var(--primary); font-weight: bold; font-size: 0.9rem; display: block; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo">金合舅 JOJOPAY</div>
-</header>
+<header><div style="font-size: 1.5rem; color: var(--primary); font-weight: bold;">金合舅 JOJOPAY</div></header>
 
-<div id="nav" class="nav-bar hidden">
-    <div class="nav-item" onclick="showPage('member-center')">會員中心</div>
-    <div class="nav-item" onclick="showPage('loan-page')">申請貸款</div>
-    <div class="nav-item" onclick="logout()">登出</div>
-</div>
-
-<div id="login-page" class="container">
-    <h2>會員登入</h2>
-    <input type="text" id="login-phone" placeholder="手機號碼">
-    <input type="password" id="login-pw" placeholder="密碼">
-    <button onclick="handleLogin()">登入系統</button>
-    <button class="btn-outline" onclick="toggleAuth('forgot')">忘記密碼？</button>
-    <button class="btn-outline" onclick="toggleAuth('register')">註冊新帳號</button>
-</div>
-
-<div id="register-page" class="container hidden">
-    <h2>新會員註冊</h2>
-    <p style="color:#888; font-size: 0.8rem;">測試期間免手機驗證</p>
-    <input type="text" id="reg-phone" placeholder="手機號碼">
-    <input type="password" id="reg-pw" placeholder="設定登入密碼">
-    <input type="text" id="reg-id" placeholder="身分證字號">
-    <div class="file-label">出生年月日</div>
-    <input type="date" id="reg-birthday">
-    <button onclick="handleRegister()">立即完成註冊</button>
-    <button class="btn-outline" onclick="toggleAuth('login')">返回登入</button>
-</div>
-
-<div id="forgot-page" class="container hidden">
-    <h2>找回密碼驗證</h2>
-    <input type="text" id="f-phone" placeholder="註冊手機號碼">
-    <input type="text" id="f-id" placeholder="身分證字號">
-    <div class="file-label">出生年月日</div>
-    <input type="date" id="f-birthday">
-    <button onclick="handleVerifyForgot()">提交驗證</button>
-    
-    <div id="reset-area" class="hidden">
-        <hr>
-        <input type="password" id="new-pw" placeholder="輸入新密碼">
-        <button onclick="handleResetPassword()">確認重設</button>
+<div id="auth-section">
+    <div id="login-page" class="container">
+        <h2>會員登入</h2>
+        <input type="text" id="login-phone" placeholder="手機號碼">
+        <input type="password" id="login-pw" placeholder="密碼">
+        <button onclick="handleLogin()">登入系統</button>
+        <button class="btn-gray" onclick="showAuth('register')">註冊新帳號</button>
     </div>
-    <button class="btn-outline" onclick="toggleAuth('login')">返回登入</button>
+
+    <div id="register-page" class="container hidden">
+        <h2>新會員註冊</h2>
+        <input type="text" id="reg-phone" placeholder="手機號碼">
+        <input type="password" id="reg-pw" placeholder="登入密碼">
+        <input type="text" id="reg-id" placeholder="身分證字號">
+        <span class="label-gold">出生年月日</span>
+        <input type="date" id="reg-birthday">
+        <button onclick="handleRegister()">完成註冊</button>
+        <button class="btn-gray" onclick="showAuth('login')">返回登入</button>
+    </div>
 </div>
 
-<div id="member-center" class="container hidden">
-    <h2>實名認證 (KYC)</h2>
-    <div id="kyc-form">
-        <input type="text" id="kyc-name" placeholder="真實姓名">
-        <input type="text" id="kyc-line" placeholder="Line ID">
-        <hr>
-        <input type="text" id="kyc-job" placeholder="工作單位">
-        <div class="file-label">上傳工作證明/工作證</div>
-        <input type="file" id="img-job" accept="image/*">
-        <hr>
-        <input type="text" id="kyc-school" placeholder="就讀學校">
-        <div class="file-label">上傳學生證</div>
-        <input type="file" id="img-school" accept="image/*">
-        <button onclick="submitKYC()">提交審核資料</button>
-    </div>
-    <div id="kyc-status" class="hidden" style="text-align:center;">
-        <h3 style="color:var(--primary)">⏳ 資料審核中</h3>
-        <p>資料已安全提交，專員核對中。</p>
+<div id="kyc-section" class="hidden">
+    <div class="container">
+        <div class="steps-bar">
+            <div id="s1" class="step active">1</div>
+            <div id="s2" class="step">2</div>
+            <div id="s3" class="step">3</div>
+            <div id="s4" class="step">4</div>
+        </div>
+
+        <div id="step-1">
+            <h3>基本資料</h3>
+            <input type="text" id="kyc-name" placeholder="真實姓名">
+            <input type="text" id="kyc-line" placeholder="Line ID">
+            <button onclick="nextStep(2)">下一步：工作與學籍</button>
+        </div>
+
+        <div id="step-2" class="hidden">
+            <h3>現況資訊</h3>
+            <span class="label-gold">💼 工作單位</span>
+            <input type="text" id="kyc-job" placeholder="例如：台積電 / 工程師">
+            <span class="label-gold">🎓 就讀學校</span>
+            <input type="text" id="kyc-school" placeholder="例如：台灣大學 / 資管系">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-gray" onclick="nextStep(1)">上一步</button>
+                <button onclick="nextStep(3)">下一步：附件上傳</button>
+            </div>
+        </div>
+
+        <div id="step-3" class="hidden">
+            <h3>附件證明上傳</h3>
+            <div class="file-box">
+                <span class="label-gold">身分證 (正面)</span>
+                <input type="file" id="img-id" accept="image/*">
+            </div>
+            <div class="file-box">
+                <span class="label-gold">工作證明 (工作證/名片)</span>
+                <input type="file" id="img-job" accept="image/*">
+            </div>
+            <div class="file-box">
+                <span class="label-gold">學生證證明</span>
+                <input type="file" id="img-school" accept="image/*">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-gray" onclick="nextStep(2)">上一步</button>
+                <button onclick="submitAllKYC()">送出申請</button>
+            </div>
+        </div>
+
+        <div id="step-4" class="hidden" style="text-align: center;">
+            <div style="font-size: 4rem; color: var(--success);">✓</div>
+            <h2>申請已送出</h2>
+            <p>感謝您的申請，專員將盡速審核。</p>
+            <button onclick="location.reload()">回到首頁</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // --- Firebase 配置 ---
     const firebaseConfig = {
       apiKey: "AIzaSyDEsdCk1mhabHwZTqt7wRuC4_FH",
       authDomain: "theone-zero.firebaseapp.com",
@@ -106,38 +121,21 @@
     const db = firebase.database();
     let currentUser = null;
 
-    // --- 切換邏輯 ---
-    function toggleAuth(pageName) {
-        document.getElementById('login-page').classList.add('hidden');
-        document.getElementById('register-page').classList.add('hidden');
-        document.getElementById('forgot-page').classList.add('hidden');
-        document.getElementById(pageName + '-page').classList.remove('hidden');
+    function showAuth(type) {
+        document.getElementById('login-page').classList.toggle('hidden', type === 'register');
+        document.getElementById('register-page').classList.toggle('hidden', type === 'login');
     }
 
-    // --- 註冊 (直接寫入資料庫) ---
     function handleRegister() {
         const phone = document.getElementById('reg-phone').value;
         const pw = document.getElementById('reg-pw').value;
-        const id = document.getElementById('reg-id').value;
-        const bday = document.getElementById('reg-birthday').value;
-
-        if(!phone || !pw || !id || !bday) return alert("請完整填寫註冊資料");
-
-        db.ref('users/' + phone).once('value', snap => {
-            if(snap.exists()) {
-                alert("此手機號碼已存在");
-            } else {
-                db.ref('users/' + phone).set({
-                    phone: phone, pw: pw, idNum: id, birthday: bday, kycStatus: '未認證'
-                }).then(() => {
-                    alert("註冊成功！請登入");
-                    toggleAuth('login');
-                });
-            }
-        });
+        if(!phone || !pw) return alert("請填寫手機與密碼");
+        db.ref('users/' + phone).set({
+            phone: phone, pw: pw, idNum: document.getElementById('reg-id').value,
+            birthday: document.getElementById('reg-birthday').value, kycStatus: '未認證'
+        }).then(() => { alert("註冊成功！請登入"); showAuth('login'); });
     }
 
-    // --- 登入 ---
     function handleLogin() {
         const phone = document.getElementById('login-phone').value;
         const pw = document.getElementById('login-pw').value;
@@ -145,41 +143,46 @@
             const u = snap.val();
             if(u && u.pw === pw) {
                 currentUser = phone;
-                document.getElementById('login-page').classList.add('hidden');
-                document.getElementById('nav').classList.remove('hidden');
-                showPage('member-center');
-            } else { alert("帳號或密碼錯誤"); }
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('kyc-section').classList.remove('hidden');
+                if(u.kycStatus === '審核中') nextStep(4);
+            } else { alert("登入失敗"); }
         });
     }
 
-    // --- 忘記密碼 ---
-    function handleVerifyForgot() {
-        const phone = document.getElementById('f-phone').value;
-        const id = document.getElementById('f-id').value;
-        const bday = document.getElementById('f-birthday').value;
-        db.ref('users/' + phone).once('value', snap => {
-            const u = snap.val();
-            if(u && u.idNum === id && u.birthday === bday) {
-                document.getElementById('reset-area').classList.remove('hidden');
-            } else { alert("核對失敗，資料不正確"); }
+    function nextStep(stepNum) {
+        for(let i=1; i<=4; i++) {
+            document.getElementById('step-'+i).classList.add('hidden');
+            document.getElementById('s'+i).classList.remove('active', 'done');
+            if(i < stepNum) document.getElementById('s'+i).classList.add('done');
+        }
+        document.getElementById('step-'+stepNum).classList.remove('hidden');
+        document.getElementById('s'+stepNum).classList.add('active');
+    }
+
+    const toBase64 = file => new Promise((resolve) => {
+        if(!file) resolve("");
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+    });
+
+    async function submitAllKYC() {
+        alert("資料上傳中，請勿關閉視窗...");
+        const data = {
+            name: document.getElementById('kyc-name').value,
+            line: document.getElementById('kyc-line').value,
+            job: document.getElementById('kyc-job').value,
+            school: document.getElementById('kyc-school').value,
+            idImg: await toBase64(document.getElementById('img-id').files[0]),
+            jobImg: await toBase64(document.getElementById('img-job').files[0]),
+            schoolImg: await toBase64(document.getElementById('img-school').files[0]),
+            kycStatus: '審核中'
+        };
+        db.ref('users/' + currentUser).update(data).then(() => {
+            nextStep(4);
         });
     }
-
-    function handleResetPassword() {
-        const phone = document.getElementById('f-phone').value;
-        const newPw = document.getElementById('new-pw').value;
-        db.ref('users/' + phone).update({ pw: newPw }).then(() => {
-            alert("密碼已更新");
-            location.reload();
-        });
-    }
-
-    function showPage(id) {
-        document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    function logout() { location.reload(); }
 </script>
 </body>
 </html>
