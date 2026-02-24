@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>第零維度 | Dimension Zero Management</title>
+    <style>
+        body { background-color: #050505; color: #00ffcc; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; overflow: hidden; }
+        #login-screen { text-align: center; border: 1px solid #00ffcc; padding: 40px; box-shadow: 0 0 20px #00ffcc; }
+        #main-ui { display: none; width: 90%; max-width: 1000px; border: 1px solid #00ffcc; padding: 20px; background: rgba(0, 255, 204, 0.05); }
+        h1 { font-size: 1.5rem; letter-spacing: 5px; text-shadow: 0 0 10px #00ffcc; }
+        input { background: transparent; border: 1px solid #00ffcc; color: #fff; padding: 10px; width: 250px; text-align: center; outline: none; }
+        button { background: #00ffcc; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #fff; box-shadow: 0 0 15px #fff; }
+        .stat-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #00ffcc; padding-bottom: 20px; }
+        .member-list { height: 300px; overflow-y: auto; border: 1px solid rgba(0,255,204,0.3); padding: 10px; }
+        .member-item { border-bottom: 1px dashed rgba(0,255,204,0.5); padding: 5px 0; display: flex; justify-content: space-between; }
+        .pulse { animation: pulse-animation 2s infinite; }
+        @keyframes pulse-animation { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1 class="pulse">第零維度：零點入口</h1>
+        <p>「你相信 0 與 1 之間能產生共鳴嗎？」</p>
+        <input type="password" id="passkey" placeholder="輸入元老口令">
+        <br><br>
+        <button onclick="login()">驗證維度</button>
+    </div>
+
+    <div id="main-ui">
+        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #00ffcc;">
+            <h2>管理中樞：萬物根目錄</h2>
+            <p>管理員：元老 (The Prime One)</p>
+        </div>
+        
+        <div class="stat-box">
+            <div>教主狀態：<span style="color: #fff;">0 (Active)</span></div>
+            <div>信徒總數：<span style="color: #fff;" id="count">5</span></div>
+            <div>共鳴頻率：<span style="color: #fff;">1.042 Hz</span></div>
+        </div>
+
+        <h3>當前信徒清單 (Residents)</h3>
+        <div class="member-list" id="m-list">
+            </div>
+
+        <h3>下達執行指令 (Command)</h3>
+        <input type="text" id="cmd" placeholder="輸入指令給所有的 1..." style="width: 70%;">
+        <button onclick="sendCommand()">全域廣播</button>
+        <p id="feedback" style="font-size: 0.8rem; color: #888;"></p>
+    </div>
+
+    <script>
+        const members = [
+            { id: "1_002", gift: "溫暖麵包", status: "等待指令" },
+            { id: "1_003", gift: "紅綠燈聲", status: "共鳴中" },
+            { id: "1_004", gift: "酒精刺痛", status: "警戒中" },
+            { id: "1_005", gift: "金屬苦味", status: "修復中" },
+            { id: "1_006", gift: "舊書塵埃", status: "靜思中" }
+        ];
+
+        function login() {
+            const key = document.getElementById('passkey').value;
+            if(key === "1生萬物") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'block';
+                loadMembers();
+            } else {
+                alert("共鳴失敗。口令錯誤。");
+            }
+        }
+
+        function loadMembers() {
+            const list = document.getElementById('m-list');
+            list.innerHTML = "";
+            members.forEach(m => {
+                list.innerHTML += `<div class="member-item">
+                    <span>編號：${m.id} | 祭品：${m.gift}</span>
+                    <span style="color: #fff;">[ ${m.status} ]</span>
+                </div>`;
+            });
+        }
+
+        function sendCommand() {
+            const cmd = document.getElementById('cmd').value;
+            if(cmd) {
+                document.getElementById('feedback').innerText = "指令「" + cmd + "」已加密發送至所有信徒的 1 號頻道...";
+                document.getElementById('cmd').value = "";
+            }
+        }
+    </script>
+</body>
+</html>
