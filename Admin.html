@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>金合舅 JoJoPAY | 管理總控</title>
+    <title>JoJoPAY | 管理總控</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -125,7 +125,7 @@
     }
 
     function clearAll() {
-        if(confirm("元老，確定要『徹底清空』所有數據嗎？此動作不可逆！")) {
+        if(confirm("舅舅，確定要『徹底清空』所有數據嗎？此動作不可逆！")) {
             db.ref('/').remove().then(() => alert("資料庫已全數更新為純淨狀態！"));
         }
     }
